@@ -1,0 +1,17 @@
+# Command name completion for Carp.
+function _carp() {
+    local cur commands
+    cur=${COMP_WORDS[COMP_CWORD]}
+    if [ "${COMP_WORDS[1]}" = "umount" ]; then
+        commands=$(carp list)
+        COMPREPLY=( $(compgen -W "$commands" $cur) )
+
+    elif [ "${COMP_WORDS[1]}" = "create" ] || [ "${COMP_WORDS[1]}" = "mount" ]; then
+        COMPREPLY=( $(compgen -d $cur) )
+
+    else
+        commands="create help list mount umount"
+        COMPREPLY=( $(compgen -W "$commands" $cur) )
+    fi
+}
+complete -o default -F _carp carp f

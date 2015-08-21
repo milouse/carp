@@ -1,0 +1,162 @@
+#!/usr/bin/env bash
+
+cmd_help(){
+    local COMMAND='all'
+    if [ -n "$1" ]; then
+        COMMAND=$1
+    fi
+
+    if [ "$COMMAND" == 'all' ]; then
+        echo "$0 version 0.1"
+        echo "Bring to you by Étienne Deparis <etienne@depar.is>"
+        echo
+    fi
+
+    if [ "$COMMAND" == 'all' -o "$COMMAND" == 'create' ]; then
+        echo "Usage: $0 create [-m] [-s] <empty future encrypted folder>"
+        echo "m) Automount your new encfs folder after creation"
+        echo "s) Save your password in your home folder to avoid typing it when mounting your secret folder"
+        echo
+    fi
+
+    if [ "$COMMAND" == 'all' -o "$COMMAND" == 'mount' ]; then
+        echo "Usage: $0 mount <encrypted folder>"
+        echo
+    fi
+
+    if [ "$COMMAND" == 'all' -o "$COMMAND" == 'umount' ]; then
+        echo "Usage: $0 umount <secret folder name>"
+        echo
+    fi
+}
+
+
+cmd_init(){
+    FOLDERNAME=`basename $1`
+    PRIVATE_FOLDER="$HOME/Private/$FOLDERNAME"
+    PREFPATH="$HOME/.config/.carp/$FOLDERNAME"
+
+    if [ ! -d "$PREFPATH" ]; then
+        mkdir -p "$PREFPATH"
+    fi
+
+    PASSWORD_FILE="${PREFPATH}/encfs.pass"
+}
+
+
+cmd_list(){
+    grep Private /etc/mtab | sed -n "s|encfs $HOME/Private/\(.*\) fuse\.encfs.*|\1|p"
+}
+
+
+cmd_mount(){
+    if [ ! -n "$1" ]; then
+        cmd_help 'mount'
+        exit 1
+    fi
+
+    cmd_init "$1"
+
+    if grep -q "$PRIVATE_FOLDER" /etc/mtab; then
+        echo "$FOLDERNAME already mounted"
+        exit 1
+    fi
+
+    if [ ! -d "$HOME/Private" -o ! -d "$PRIVATE_FOLDER" ]; then
+        mkdir -p "$PRIVATE_FOLDER"
+    fi
+
+    if [ ! -f "${PREFPATH}/encfs6.xml" ]; then
+        echo "No preference file found for $FOLDERNAME"
+        exit 1
+    fi
+
+    export ENCFS6_CONFIG="${PREFPATH}/encfs6.xml"
+    if [ -f "$PASSWORD_FILE" ]; then
+        cat "$PASSWORD_FILE" | encfs -S "$1" "$PRIVATE_FOLDER"
+    else
+        encfs "$1" "$PRIVATE_FOLDER"
+    fi
+    echo "$FOLDERNAME mounted"
+}
+
+cmd_umount(){
+    if [ ! -n "$1" ]; then
+        cmd_help 'umount'
+        exit 1
+    fi
+
+    local FOLDERNAME="$1"
+    local PRIVATE_FOLDER="$HOME/Private/$FOLDERNAME"
+
+    if grep -q "$PRIVATE_FOLDER" /etc/mtab; then
+        fusermount -u "$PRIVATE_FOLDER"
+        echo "$FOLDERNAME unmounted"
+
+    else
+        echo "$FOLDERNAME does not seem to be mounted"
+    fi
+}
+
+cmd_create(){
+    if [ ! -n "$1" ]; then
+        cmd_help 'create'
+        exit 1
+    fi
+
+    local MUSTSAVEPASSWORD=1
+    local MUSTMOUNTAFTERCREATE=1
+    while getopts  "sm" flag; do
+        case "$flag" in
+            s) MUSTSAVEPASSWORD=0 ;;
+            m) MUSTMOUNTAFTERCREATE=0 ;;
+        esac
+    done
+    shift $((OPTIND-1))
+
+    if [ ! -d "$1" ]; then
+       mkdir -p "$1"
+    fi
+
+    cmd_init "$1"
+
+    if [ -d "$PRIVATE_FOLDER" ]; then
+        echo "Warning: $PRIVATE_FOLDER already exists in the file system. Encfs creation will probably fail. Please remove/rename it first."
+        exit 1
+    fi
+
+    encfs "$1" "$PRIVATE_FOLDER"
+    sleep 2
+    fusermount -u "$PRIVATE_FOLDER"
+
+    mv "$1/.encfs6.xml" "${PREFPATH}/encfs6.xml"
+
+    if [ "$MUSTSAVEPASSWORD" = 0 ]; then
+        echo "Please enter your password a last time in order to save it in your home folder. Leave it blank and press enter if you changed your mind."
+        echo -n "Password > "
+        read PASSWORD
+
+        if [ -n "$PASSWORD" ]; then
+            echo "$PASSWORD" > "$PASSWORD_FILE"
+        fi
+    fi
+
+    echo "Secret folder created"
+
+    if [ "$MUSTMOUNTAFTERCREATE" = 0 ]; then
+        cmd_mount "$1"
+    fi
+}
+
+if [ ! -d "$HOME/.config/.carp" ]; then
+    mkdir -p "$HOME/.config/.carp"
+fi
+
+case "$1" in
+    create) shift; cmd_create "$@" ;;
+    mount|merveilleux) shift; cmd_mount "$@" ;;
+    umount|regretté) shift; cmd_umount "$@" ;;
+    list) shift; cmd_list ;;
+    help|h) cmd_help ;;
+    *) cmd_help ;;
+esac
