@@ -77,7 +77,12 @@ cmd_mount(){
     else
         encfs "$1" "$PRIVATE_FOLDER"
     fi
-    echo "$FOLDERNAME mounted"
+
+    if [ "$?" = 0 ]; then
+        echo "$FOLDERNAME mounted"
+    else
+        echo "$FOLDERNAME NOT mounted"
+    fi
 }
 
 cmd_umount(){
@@ -90,9 +95,11 @@ cmd_umount(){
     local PRIVATE_FOLDER="$HOME/Private/$FOLDERNAME"
 
     if grep -q "$PRIVATE_FOLDER" /etc/mtab; then
-        fusermount -u "$PRIVATE_FOLDER"
-        echo "$FOLDERNAME unmounted"
-
+        if fusermount -u "$PRIVATE_FOLDER"; then
+            echo "$FOLDERNAME unmounted"
+        else
+            echo "An error happened, $FOLDERNAME NOT unmounted"
+        fi
     else
         echo "$FOLDERNAME does not seem to be mounted"
     fi
