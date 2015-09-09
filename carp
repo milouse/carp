@@ -14,7 +14,28 @@ cmd_help(){
 }
 
 cmd_init(){
-    FOLDER_NAME=`basename $1`
+
+    NORMALIZED_ROOTDIR=$1
+    if [ "${NORMALIZED_ROOTDIR:0:1}" != "~" -a "${NORMALIZED_ROOTDIR:0:1}" != "/" ]
+    then
+        NORMALIZED_ROOTDIR=$(realpath $1)
+    fi
+
+    if [ ! -d "$NORMALIZED_ROOTDIR" ]; then
+        echo "Your encrypted folder ${NORMALIZED_ROOTDIR} do not seems to exist."
+        echo -n "Do you want to create it? [Yn] "
+        read CREATE_ROOTDIR
+
+        if [ "$CREATE_ROOTDIR" != "n" -a "$CREATE_ROOTDIR" != "N" ]; then
+            mkdir -p "$NORMALIZED_ROOTDIR"
+        else
+          exit 1
+        fi
+    fi
+
+    FOLDER_NAME=`basename ${NORMALIZED_ROOTDIR}`
+
+
     PRIVATE_FOLDER="$HOME/Private/$FOLDER_NAME"
     PREFPATH="$HOME/.config/.carp/$FOLDER_NAME"
 
@@ -37,7 +58,7 @@ cmd_list(){
 
 cmd_mount(){
     if [ ! -n "$1" ]; then
-        cmd_help 'mount'
+        cmd_help
         exit 1
     fi
 
@@ -55,9 +76,9 @@ cmd_mount(){
 
     export ENCFS6_CONFIG="${PREFPATH}/encfs6.xml"
     if [ -f "$PASSWORD_FILE" ]; then
-        cat "$PASSWORD_FILE" | encfs -S "$1" "$PRIVATE_FOLDER"
+        cat "$PASSWORD_FILE" | encfs -S "$NORMALIZED_ROOTDIR" "$PRIVATE_FOLDER"
     else
-        encfs "$1" "$PRIVATE_FOLDER"
+        encfs "$NORMALIZED_ROOTDIR" "$PRIVATE_FOLDER"
     fi
 
     if [ "$?" = 0 ]; then
@@ -69,7 +90,7 @@ cmd_mount(){
 
 cmd_umount(){
     if [ ! -n "$1" ]; then
-        cmd_help 'umount'
+        cmd_help
         exit 1
     fi
 
@@ -89,7 +110,7 @@ cmd_umount(){
 
 cmd_create(){
     if [ ! -n "$1" ]; then
-        cmd_help 'create'
+        cmd_help
         exit 1
     fi
 
@@ -103,10 +124,6 @@ cmd_create(){
     done
     shift $((OPTIND-1))
 
-    if [ ! -d "$1" ]; then
-       mkdir -p "$1"
-    fi
-
     cmd_init "$1"
 
     if [ -d "$PRIVATE_FOLDER" ]; then
@@ -114,11 +131,11 @@ cmd_create(){
         exit 1
     fi
 
-    encfs "$1" "$PRIVATE_FOLDER"
+    encfs "$NORMALIZED_ROOTDIR" "$PRIVATE_FOLDER"
     sleep 2
     fusermount -u "$PRIVATE_FOLDER"
 
-    mv "$1/.encfs6.xml" "${PREFPATH}/encfs6.xml"
+    mv "${NORMALIZED_ROOTDIR}/.encfs6.xml" "${PREFPATH}/encfs6.xml"
 
     if [ "$MUST_SAVE_PASSWORD" = 0 ]; then
         echo "Please enter your password a last time in order to save it in your home folder. Leave it blank and press enter if you changed your mind."
@@ -133,7 +150,7 @@ cmd_create(){
     echo "Secret folder created"
 
     if [ "$MUST_MOUNT_AFTER_CREATE" = 0 ]; then
-        cmd_mount "$1"
+        cmd_mount "$NORMALIZED_ROOTDIR"
     fi
 }
 
