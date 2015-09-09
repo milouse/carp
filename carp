@@ -14,9 +14,9 @@ cmd_help(){
 }
 
 cmd_init(){
-    FOLDERNAME=`basename $1`
-    PRIVATE_FOLDER="$HOME/Private/$FOLDERNAME"
-    PREFPATH="$HOME/.config/.carp/$FOLDERNAME"
+    FOLDER_NAME=`basename $1`
+    PRIVATE_FOLDER="$HOME/Private/$FOLDER_NAME"
+    PREFPATH="$HOME/.config/.carp/$FOLDER_NAME"
 
     if [ ! -d "$PRIVATE_FOLDER" ]; then
         mkdir -p "$PRIVATE_FOLDER"
@@ -44,12 +44,12 @@ cmd_mount(){
     cmd_init "$1"
 
     if grep -q "$PRIVATE_FOLDER" /etc/mtab; then
-        echo "$FOLDERNAME already mounted"
+        echo "$FOLDER_NAME already mounted"
         exit 1
     fi
 
     if [ ! -f "${PREFPATH}/encfs6.xml" ]; then
-        echo "No preference file found for $FOLDERNAME"
+        echo "No preference file found for $FOLDER_NAME"
         exit 1
     fi
 
@@ -61,9 +61,9 @@ cmd_mount(){
     fi
 
     if [ "$?" = 0 ]; then
-        echo "$FOLDERNAME mounted"
+        echo "$FOLDER_NAME mounted"
     else
-        echo "$FOLDERNAME NOT mounted"
+        echo "$FOLDER_NAME NOT mounted"
     fi
 }
 
@@ -73,17 +73,17 @@ cmd_umount(){
         exit 1
     fi
 
-    local FOLDERNAME="$1"
-    local PRIVATE_FOLDER="$HOME/Private/$FOLDERNAME"
+    local FOLDER_NAME="$1"
+    local PRIVATE_FOLDER="$HOME/Private/$FOLDER_NAME"
 
     if grep -q "$PRIVATE_FOLDER" /etc/mtab; then
         if fusermount -u "$PRIVATE_FOLDER"; then
-            echo "$FOLDERNAME unmounted"
+            echo "$FOLDER_NAME unmounted"
         else
-            echo "An error happened, $FOLDERNAME NOT unmounted"
+            echo "An error happened, $FOLDER_NAME NOT unmounted"
         fi
     else
-        echo "$FOLDERNAME does not seem to be mounted"
+        echo "$FOLDER_NAME does not seem to be mounted"
     fi
 }
 
@@ -93,12 +93,12 @@ cmd_create(){
         exit 1
     fi
 
-    local MUSTSAVEPASSWORD=1
-    local MUSTMOUNTAFTERCREATE=1
+    local MUST_SAVE_PASSWORD=1
+    local MUST_MOUNT_AFTER_CREATE=1
     while getopts  "sm" flag; do
         case "$flag" in
-            s) MUSTSAVEPASSWORD=0 ;;
-            m) MUSTMOUNTAFTERCREATE=0 ;;
+            s) MUST_SAVE_PASSWORD=0 ;;
+            m) MUST_MOUNT_AFTER_CREATE=0 ;;
         esac
     done
     shift $((OPTIND-1))
@@ -120,7 +120,7 @@ cmd_create(){
 
     mv "$1/.encfs6.xml" "${PREFPATH}/encfs6.xml"
 
-    if [ "$MUSTSAVEPASSWORD" = 0 ]; then
+    if [ "$MUST_SAVE_PASSWORD" = 0 ]; then
         echo "Please enter your password a last time in order to save it in your home folder. Leave it blank and press enter if you changed your mind."
         echo -n "Password > "
         read PASSWORD
@@ -132,7 +132,7 @@ cmd_create(){
 
     echo "Secret folder created"
 
-    if [ "$MUSTMOUNTAFTERCREATE" = 0 ]; then
+    if [ "$MUST_MOUNT_AFTER_CREATE" = 0 ]; then
         cmd_mount "$1"
     fi
 }
