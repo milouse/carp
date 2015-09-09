@@ -1,40 +1,26 @@
 #!/usr/bin/env bash
 
 cmd_help(){
-    local COMMAND='all'
-    if [ -n "$1" ]; then
-        COMMAND=$1
-    fi
+    local script_path=`dirname $(realpath $0)`
+    if man 1 carp &>/dev/null; then
+        man 1 carp
 
-    if [ "$COMMAND" == 'all' ]; then
-        echo "$0 version 0.1"
-        echo "Bring to you by Étienne Deparis <etienne@depar.is>"
-        echo
-    fi
+    elif [ -f "${script_path}/carp.1" ]; then
+        man -l "${script_path}/carp.1"
 
-    if [ "$COMMAND" == 'all' -o "$COMMAND" == 'create' ]; then
-        echo "Usage: $0 create [-m] [-s] <empty future encrypted folder>"
-        echo "m) Automount your new encfs folder after creation"
-        echo "s) Save your password in your home folder to avoid typing it when mounting your secret folder"
-        echo
-    fi
-
-    if [ "$COMMAND" == 'all' -o "$COMMAND" == 'mount' ]; then
-        echo "Usage: $0 mount <encrypted folder>"
-        echo
-    fi
-
-    if [ "$COMMAND" == 'all' -o "$COMMAND" == 'umount' ]; then
-        echo "Usage: $0 umount <secret folder name>"
-        echo
+    else
+      echo "No manual found :("
     fi
 }
-
 
 cmd_init(){
     FOLDERNAME=`basename $1`
     PRIVATE_FOLDER="$HOME/Private/$FOLDERNAME"
     PREFPATH="$HOME/.config/.carp/$FOLDERNAME"
+
+    if [ ! -d "$PRIVATE_FOLDER" ]; then
+        mkdir -p "$PRIVATE_FOLDER"
+    fi
 
     if [ ! -d "$PREFPATH" ]; then
         mkdir -p "$PREFPATH"
@@ -60,10 +46,6 @@ cmd_mount(){
     if grep -q "$PRIVATE_FOLDER" /etc/mtab; then
         echo "$FOLDERNAME already mounted"
         exit 1
-    fi
-
-    if [ ! -d "$HOME/Private" -o ! -d "$PRIVATE_FOLDER" ]; then
-        mkdir -p "$PRIVATE_FOLDER"
     fi
 
     if [ ! -f "${PREFPATH}/encfs6.xml" ]; then
@@ -159,11 +141,14 @@ if [ ! -d "$HOME/.config/.carp" ]; then
     mkdir -p "$HOME/.config/.carp"
 fi
 
+if [ ! -d "$HOME/Private" ]; then
+    mkdir -p "$HOME/Private"
+fi
+
 case "$1" in
     create) shift; cmd_create "$@" ;;
     mount|merveilleux) shift; cmd_mount "$@" ;;
     umount|regretté) shift; cmd_umount "$@" ;;
     list) shift; cmd_list ;;
-    help|h) cmd_help ;;
     *) cmd_help ;;
 esac

@@ -1,0 +1,77 @@
+.TH CARP 1 "10 september 2015"
+.SH NAME
+carp - EncFS CLI managing tool
+.SH SYNOPSIS
+.B "carp create"
+[\fB\-m\fR] [\fB\-s\fR]
+.I rootdir
+.LP
+.B "carp mount"
+.I rootdir
+.LP
+.B "carp umount"
+.I name
+.LP
+.B carp
+[\fBhelp\fR|\fBlist\fR]
+.SH DESCRIPTION
+carp is an EncFS frontend to ease day-to-day creating, mounting and
+umounting your various stashes. Using this script, your stash will
+always be mounted under \fI~/Private\fR.
+.SH COMMANDS
+.TP
+.B create
+Create a new EncFS stash.
+.TP
+.B mount
+Mount an existing EncFS stash.
+.TP
+.B umount
+Umount a currently mounted EncFS stash.
+.TP
+.B list
+List all your currently mounted EncFS stashes.
+.TP
+.B help
+Show this manual page.
+.SH "CREATE OPTIONS"
+.TP
+.B -m
+Automount your new encfs folder after creation
+.TP
+.B -s
+Save your password in your home folder to avoid typing it when mounting
+your secret folder.
+.TP
+.I rootdir
+The
+.B path
+to your future encrypted stash. This \fBpath\fR MUST be a complete path,
+not a relative one.
+.SH "MOUNT OPTIONS"
+.TP
+.I rootdir
+The
+.B path
+to the encrypted stash you want to open. This \fBpath\fR MUST be a
+complete path, not a relative one.
+.SH "UMOUNT OPTIONS"
+.TP
+.I name
+The
+.B name
+of one of your currently mounted EncFS stash. You can find these names
+by using the \fIcarp\fR \fBlist\fR command.
+.SH FILES
+.LP
+~/.config/.carp/* - Each subfolder contains the stash-related
+configuration file and your \fBnot-encrypted\fR passphrase in another
+file.
+.LP
+~/Private - All your EncFS stash will be mounted under the \fIPrivate\fR
+folder of the current user home folder.
+.SH "SEE ALSO"
+.BR encfs (1),
+.BR fusermount (1).
+.SH AUTHOR
+Étienne Deparis <etienne@depar.is>
