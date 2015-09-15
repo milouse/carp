@@ -116,7 +116,7 @@ cmd_create(){
 
     local MUST_SAVE_PASSWORD=1
     local MUST_MOUNT_AFTER_CREATE=1
-    while getopts  "sm" flag; do
+    while getopts "sm" flag; do
         case "$flag" in
             s) MUST_SAVE_PASSWORD=0 ;;
             m) MUST_MOUNT_AFTER_CREATE=0 ;;
