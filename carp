@@ -52,7 +52,7 @@ cmd_init(){
 
 
 cmd_list(){
-    grep Private /etc/mtab | sed -n "s|encfs $HOME/Private/\(.*\) fuse\.encfs.*|\1|p"
+    basename $(grep fuse\.encfs /proc/mounts | awk '{ print $2 }' | grep "$HOME/Private")
 }
 
 
@@ -64,7 +64,7 @@ cmd_mount(){
 
     cmd_init "$1"
 
-    if grep -q "$PRIVATE_FOLDER" /etc/mtab; then
+    if grep -q "$PRIVATE_FOLDER" /proc/mounts; then
         echo "$FOLDER_NAME already mounted"
         exit 1
     fi
@@ -97,7 +97,7 @@ cmd_umount(){
     local FOLDER_NAME="$1"
     local PRIVATE_FOLDER="$HOME/Private/$FOLDER_NAME"
 
-    if grep -q "$PRIVATE_FOLDER" /etc/mtab; then
+    if grep -q "$PRIVATE_FOLDER" /proc/mounts; then
         if fusermount -u "$PRIVATE_FOLDER"; then
             echo "$FOLDER_NAME unmounted"
         else
