@@ -4,7 +4,7 @@ PKGNAME=carp
 all: build install
 
 build:
-	gzip $(PKGNAME).1
+	gzip -k $(PKGNAME).1
 
 install:
 	install -d -m755	$(DEST)/bin
@@ -16,6 +16,7 @@ install:
 	install -D -m644 LICENSE				$(DEST)/share/licenses/$(PKGNAME)/LICENSE
 	install -D -m644 $(PKGNAME).1.gz		$(DEST)/share/man/man1/$(PKGNAME).1.gz
 	install -D -m644 $(PKGNAME)-completions	$(DEST)/share/bash-completion/completions/$(PKGNAME)
+	install -D -m644 _$(PKGNAME)			$(DEST)/share/zsh/site-functions/_$(PKGNAME)
 
 uninstall:
 	rm $(DEST)/bin/$(PKGNAME)
@@ -23,3 +24,4 @@ uninstall:
 	rmdir $(DEST)/share/licenses/$(PKGNAME)
 	rm $(DEST)/share/man/man1/$(PKGNAME).1.gz
 	rm $(DEST)/share/bash-completion/completions/$(PKGNAME)
+	rm $(DEST)/share/zsh/site-functions/_$(PKGNAME)
