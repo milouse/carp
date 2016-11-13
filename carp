@@ -96,7 +96,7 @@ cmd_umount(){
         exit 1
     fi
 
-    local FOLDER_NAME="$1"
+    local FOLDER_NAME="${1%%/}"
     local PRIVATE_FOLDER="$HOME/Private/$FOLDER_NAME"
 
     if grep -q "$PRIVATE_FOLDER" /proc/mounts; then
