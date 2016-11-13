@@ -25,3 +25,6 @@ uninstall:
 	rm $(DEST)/share/man/man1/$(PKGNAME).1.gz
 	rm $(DEST)/share/bash-completion/completions/$(PKGNAME)
 	rm $(DEST)/share/zsh/site-functions/_$(PKGNAME)
+
+clean:
+	rm $(PKGNAME).1.gz
