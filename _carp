@@ -1,0 +1,42 @@
+#compdef carp
+#autoload
+
+_carp () {
+	local cmd
+	if (( CURRENT > 2)); then
+		cmd=${words[2]}
+		case "${cmd}" in
+            create)
+                _carp_cmd_show
+                ;;
+            mount)
+                _arguments : '*:directory:_directories'
+                ;;
+            umount)
+                if grep fuse\.encfs /proc/mounts 2>/dev/null; then
+                    _values 'Mounted stash' $(carp list)
+                fi
+                ;;
+		esac
+	else
+		local -a subcommands
+		subcommands=(
+			"create:Create a new EncFS stash."
+			"list:List all your currently mounted EncFS stashes"
+			"mount:Mount an existing EncFS stash."
+			"umount:Umount a currently mounted EncFS stash."
+			"help:Output help message"
+		)
+		_describe -t commands 'carp' subcommands
+		_carp_cmd_show
+	fi
+}
+
+_carp_cmd_show () {
+	_arguments : \
+		       "-m[Automount your new encfs folder after creation]" \
+		       "-s[Save your password in your home folder]" \
+               '*:directory:_directories'
+}
+
+_pass

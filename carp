@@ -52,7 +52,7 @@ cmd_init(){
 
 
 cmd_list(){
-    if grep fuse\.encfs /proc/mounts; then
+    if grep fuse\.encfs /proc/mounts 1>/dev/null; then
         basename $(grep fuse\.encfs /proc/mounts | awk '{ print $2 }' | grep "$HOME/Private")
     fi
 }
