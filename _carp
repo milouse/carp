@@ -13,7 +13,7 @@ _carp () {
                 _arguments : '*:directory:_directories'
                 ;;
             umount)
-                if grep fuse\.encfs /proc/mounts 2>/dev/null; then
+                if grep -q fuse\.encfs /proc/mounts; then
                     _values 'Mounted stash' $(carp list)
                 fi
                 ;;
