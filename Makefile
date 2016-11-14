@@ -9,6 +9,7 @@ build:
 install:
 	install -d -m755	$(DEST)/bin
 	install -d -m755	$(DEST)/share/bash-completion/completions
+	install -d -m755	$(DEST)/share/zsh/site-functions
 	install -d -m755	$(DEST)/share/man/man1
 	install -d -m755	$(DEST)/share/licenses/$(PKGNAME)
 
