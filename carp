@@ -53,7 +53,7 @@ cmd_init(){
 
 cmd_list(){
     if grep -q fuse\.encfs /proc/mounts; then
-        basename $(grep fuse\.encfs /proc/mounts | awk '{ print $2 }' | grep "$HOME/Private")
+        sed -n "s|^encfs $HOME/Private/\([^ ]*\) fuse.encfs.*$|\1|p" /proc/mounts
     fi
 }
 
