@@ -47,7 +47,7 @@ cmd_init(){
         mkdir -p "$PREFPATH"
     fi
 
-    PASSWORD_FILE="${PREFPATH}/encfs.pass"
+    PASSWORD_FILE="${PREFPATH}/encfs.pass.gpg"
 }
 
 
@@ -78,7 +78,7 @@ cmd_mount(){
 
     export ENCFS6_CONFIG="${PREFPATH}/encfs6.xml"
     if [ -f "$PASSWORD_FILE" ]; then
-        cat "$PASSWORD_FILE" | encfs -S "$NORMALIZED_ROOTDIR" "$PRIVATE_FOLDER"
+        gpg -d "$PASSWORD_FILE" 2>/dev/null | encfs -S "$NORMALIZED_ROOTDIR" "$PRIVATE_FOLDER"
     else
         encfs "$NORMALIZED_ROOTDIR" "$PRIVATE_FOLDER"
     fi
@@ -145,7 +145,7 @@ cmd_create(){
         read PASSWORD
 
         if [ -n "$PASSWORD" ]; then
-            echo "$PASSWORD" > "$PASSWORD_FILE"
+            echo "$PASSWORD" | gpg -e -o "$PASSWORD_FILE"
         fi
     fi
 
