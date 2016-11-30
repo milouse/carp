@@ -162,6 +162,17 @@ class Carp():
         return tuple(pdata)
 
     def list(self, opts):
+        if (opts.state == "mounted" and
+           not any(self.mounted_stashes())):
+            sys.exit()
+        elif (opts.state == "unmounted" and
+              not any(self.unmounted_stashes())):
+            sys.exit()
+        elif (opts.state == "all" and
+              not any(self.mounted_stashes()) and
+              not any(self.unmounted_stashes())):
+            sys.exit()
+
         if opts.raw:
             if opts.state == "mounted":
                 print("\n".join(self.mounted_stashes()))
