@@ -392,6 +392,10 @@ For exemple: %(prog)s create --help
 
     args = parser.parse_args()
 
+    if args.command not in subparsers.choices.keys():
+        parser.print_help()
+        sys.exit(1)
+
     config_file = os.path.join(xdg_config_home, ".carp", "config")
     if args.config:
         config_file = os.path.expanduser(args.config)
