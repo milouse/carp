@@ -1,9 +1,10 @@
 DEST=/usr
 PKGNAME=carp
 
-all: build install
+all: build
 
 build:
+	cp $(PKGNAME).py $(PKGNAME)
 	gzip -k $(PKGNAME).1
 
 install:
@@ -28,4 +29,5 @@ uninstall:
 	rm $(DEST)/share/zsh/site-functions/_$(PKGNAME)
 
 clean:
-	rm $(PKGNAME).1.gz
+	@rm $(PKGNAME)
+	@rm $(PKGNAME).1.gz

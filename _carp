@@ -7,15 +7,18 @@ _carp () {
 		cmd=${words[2]}
 		case "${cmd}" in
             create)
-                _carp_cmd_show
+                _carp_cmd_create
                 ;;
             mount)
-                _arguments : '*:directory:_directories'
+                _values 'Unmounted stash' $(carp list unmounted -r)
                 ;;
-            umount)
+            unmount)
                 if grep -q fuse\.encfs /proc/mounts; then
-                    _values 'Mounted stash' $(carp list)
+                    _values 'Mounted stash' $(carp list -r)
                 fi
+                ;;
+            pull|push)
+                _values 'Unmounted stashes' $(carp list unmounted -r)
                 ;;
 		esac
 	else
@@ -24,19 +27,23 @@ _carp () {
 			"create:Create a new EncFS stash."
 			"list:List all your currently mounted EncFS stashes"
 			"mount:Mount an existing EncFS stash."
-			"umount:Umount a currently mounted EncFS stash."
-			"help:Output help message"
+			"unmount:Unmount a currently mounted EncFS stash."
+            "pull:Pull a distant stash."
+            "push:Push a distant stash."
 		)
 		_describe -t commands 'carp' subcommands
-		_carp_cmd_show
 	fi
 }
 
-_carp_cmd_show () {
+_carp_cmd_create () {
 	_arguments : \
 		       "-m[Automount your new encfs folder after creation]" \
 		       "-s[Save your password in your home folder]" \
                '*:directory:_directories'
+}
+
+_carp_cmd_all () {
+	_arguments : "-t[Dry run]"
 }
 
 _pass
