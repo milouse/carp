@@ -7,7 +7,7 @@ build:
 	cp $(PKGNAME).py $(PKGNAME)
 	gzip -k $(PKGNAME).1
 
-install:
+install: build
 	install -d -m755	$(DEST)/bin
 	install -d -m755	$(DEST)/share/bash-completion/completions
 	install -d -m755	$(DEST)/share/zsh/site-functions
