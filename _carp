@@ -20,6 +20,9 @@ _carp () {
             pull|push)
                 _values 'Unmounted stashes' $(carp list unmounted -r)
                 ;;
+            list)
+                _arguments : "-r[Raw list of stashes]"
+                _values 'Stash state' mounted unmounted all
 		esac
 	else
 		local -a subcommands
