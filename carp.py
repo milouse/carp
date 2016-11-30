@@ -174,9 +174,9 @@ class Carp():
                 print("\n".join(self.unmounted_stashes()))
 
         else:
-            name_len = 0
-            mounted_len = 0
-            root_len = 0
+            name_len = 4
+            mounted_len = 4
+            root_len = 4
             lin_home = os.path.expanduser("~")
             for st in self.stashes.keys():
                 if len(st) > name_len:
