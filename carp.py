@@ -140,6 +140,11 @@ class Carp():
         else:
             pdata.append("ERR")
 
+        cmd = subprocess.run(["du", "-sh", encfs_mp],
+                             check=True, stdout=subprocess.PIPE)
+        st_size = re.sub(encfs_mp, "", cmd.stdout.decode()).strip()
+        pdata.append(st_size)
+
         if not no_state:
             final_mp = os.path.join(self.mount_point(), stash_name)
             if state != "mounted":
@@ -172,7 +177,6 @@ class Carp():
             name_len = 0
             mounted_len = 0
             root_len = 0
-            remote_len = 0
             lin_home = os.path.expanduser("~")
             for st in self.stashes.keys():
                 if len(st) > name_len:
@@ -190,44 +194,37 @@ class Carp():
                     if len(encfs_mp) > root_len:
                         root_len = len(encfs_mp)
 
-                if (self.stashes[st]["remote_path"] and
-                   len(self.stashes[st]["remote_path"]) > remote_len):
-                    remote_len = len(self.stashes[st]["remote_path"])
-
             if opts.state == "unmounted":
-                print("{:<{nfill}} {:<{rfill}} {:<{refill}}"
-                      .format("NAME", "ROOT", "REMOTE",
-                              nfill=name_len, rfill=root_len,
-                              refill=remote_len))
+                print("{:<{nfill}} {:<{rfill}} {:<7} {}"
+                      .format("NAME", "ROOT", "SIZE", "REMOTE",
+                              nfill=name_len, rfill=root_len))
 
             else:
-                print("{:<{nfill}} {:<{sfill}} {:<{rfill}} "
-                      "{:<{mfill}} {:<{refill}}"
-                      .format("NAME", "STATE", "ROOT", "PATH", "REMOTE",
-                              nfill=name_len, sfill=7, rfill=root_len,
-                              mfill=mounted_len, refill=remote_len))
+                print("{:<{nfill}} {:<7} {:<{rfill}} {:<7} {:<{mfill}} {}"
+                      .format("NAME", "STATE", "ROOT", "SIZE", "PATH",
+                              "REMOTE", nfill=name_len, rfill=root_len,
+                              mfill=mounted_len))
 
             if opts.state == "mounted" or opts.state == "all":
                 for st in self.mounted_stashes():
-                    print("{:<{nfill}} {:<{sfill}} {:<{rfill}} "
-                          "{:<{mfill}} {:<{refill}}"
+                    print("{:<{nfill}} {:<7} {:<{rfill}} "
+                          "{:<7} {:<{mfill}} {}"
                           .format(*self.format_stash(st),
-                                  nfill=name_len, sfill=7, rfill=root_len,
-                                  mfill=mounted_len, refill=remote_len))
+                                  nfill=name_len, rfill=root_len,
+                                  mfill=mounted_len))
             elif opts.state == "unmounted":
                 for st in self.unmounted_stashes():
-                    print("{:<{nfill}} {:<{rfill}} {:<{refill}}"
-                          .format(*self.format_stash(st, "-"),
-                                  nfill=name_len, rfill=root_len,
-                                  refill=remote_len))
+                    print("{:<{nfill}} {:<{rfill}} {:<7} {}"
+                          .format(*self.format_stash(st, "-", True),
+                                  nfill=name_len, rfill=root_len))
 
             if opts.state == "all":
                 for st in self.unmounted_stashes():
-                    print("{:<{nfill}} {:<{sfill}} {:<{rfill}} "
-                          "{:<{mfill}} {:<{refill}}"
+                    print("{:<{nfill}} {:<7} {:<{rfill}} {:<7} "
+                          "{:<{mfill}} {}"
                           .format(*self.format_stash(st, "-"),
-                                  nfill=name_len, sfill=7, rfill=root_len,
-                                  mfill=mounted_len, refill=remote_len))
+                                  nfill=name_len, rfill=root_len,
+                                  mfill=mounted_len))
 
     def mount(self, opts):
         self.valid_stash(opts.stash)
