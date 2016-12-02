@@ -1,0 +1,48 @@
+#+title: CARP.CONF
+#+date: <2015-09-10 jeu.>
+
+* NAME
+
+carp.conf - carp (EncFS CLI managing tool) configuration file
+
+* DESCRIPTION
+
+The *carp* config file follows the classical INI structure. The first
+section, named *general* contains shared values. Each of your stash must
+be described by a specific section, whose name is your stash name.
+
+Here is a minimal exemple
+
+#+begin_src
+[general]
+mount_point = /home/user/Private
+encfs_root = /home/user/.encfs_root
+
+[Stash1]
+remote_path = user@mydomain.net:~/Stash1
+
+[Stash2]
+#+end_src
+
+** General options
+ - mount_point :: Path to the parent folder of all your mounted stashes.
+ - encfs_root :: Path to the folder, where all your encrypted stashes
+      are kept.
+
+** Stash related options
+ - remote_path :: Path info to be passed as this to rsync for *pull* and
+      *push* operations.
+ - config_path :: Path to the folder containing configuration file and
+      password for a specific stash
+
+* FILES
+
+~/.config/.carp/carp.conf - Default config file path.
+
+#+begin_man
+.SH SEE ALSO
+.BR carp (1)
+
+.SH AUTHOR
+Étienne Deparis <etienne@depar.is>
+#+end_man
