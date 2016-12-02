@@ -9,8 +9,20 @@ from xdg.BaseDirectory import xdg_config_home
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 
 
-class Carp():
-    def __init__(self, command, command_opts, config_file):
+class CarpNotAStashError(Exception):
+    pass
+
+
+class CarpMountError(Exception):
+    pass
+
+
+class CarpNoRemoteError(Exception):
+    pass
+
+
+class StashManager:
+    def __init__(self, config_file):
         self.config_file = config_file
         self.config = ConfigParser()
         self.config.read(self.config_file)
@@ -30,11 +42,6 @@ class Carp():
                 self.stashes[sec] = loc_emp
 
         self.write_config()
-
-        if command not in dir(self):
-            die("WTF command not recognized!")
-
-        getattr(self, command)(command_opts)
 
     def init_stash(self, stash_name):
         if stash_name == "general":
@@ -67,7 +74,8 @@ class Carp():
     def check_dir(self, path):
         if (os.path.exists(path) and
            not os.path.isdir(path)):
-            die("{} already exists in your file system but is "
+            raise NotADirectoryError(
+                "{} already exists in your file system but is "
                 "NOT an empty folder.".format(path))
         elif not os.path.exists(path):
             os.makedirs(path)
@@ -104,7 +112,8 @@ class Carp():
 
     def valid_stash(self, stash_name):
         if stash_name not in self.stashes.keys():
-            die("{} is not a known stash.".format(stash_name))
+            raise CarpNotAStashError("{} is not a known stash."
+                                     .format(stash_name))
 
     def mounted_stashes(self):
         all_stashes = self.stashes.keys()
@@ -162,98 +171,103 @@ class Carp():
         return tuple(pdata)
 
     def list(self, opts):
-        if (opts.state == "mounted" and
+        if (opts["state"] == "mounted" and
            not any(self.mounted_stashes())):
-            sys.exit()
-        elif (opts.state == "unmounted" and
+            return True
+        elif (opts["state"] == "unmounted" and
               not any(self.unmounted_stashes())):
-            sys.exit()
-        elif (opts.state == "all" and
+            return True
+        elif (opts["state"] == "all" and
               not any(self.mounted_stashes()) and
               not any(self.unmounted_stashes())):
-            sys.exit()
+            return True
 
-        if opts.raw:
-            if opts.state == "mounted":
+        if opts["raw"]:
+            if opts["state"] == "mounted":
                 print("\n".join(self.mounted_stashes()))
 
-            elif opts.state == "unmounted":
+            elif opts["state"] == "unmounted":
                 print("\n".join(self.unmounted_stashes()))
 
             else:
                 print("\n".join(self.mounted_stashes()))
                 print("\n".join(self.unmounted_stashes()))
+
+            return True
+
+        name_len = 4
+        mounted_len = 4
+        root_len = 4
+        lin_home = os.path.expanduser("~")
+        for st in self.stashes.keys():
+            if len(st) > name_len:
+                name_len = len(st)
+
+            final_mp = os.path.join(self.mount_point(), st)
+            if os.path.exists(final_mp) and st in self.mounted_stashes():
+                final_mp = re.sub(lin_home, "~", final_mp)
+                if len(final_mp) > mounted_len:
+                    mounted_len = len(final_mp)
+
+            encfs_mp = os.path.join(self.encfs_root(), st)
+            if os.path.exists(encfs_mp):
+                encfs_mp = re.sub(lin_home, "~", encfs_mp)
+                if len(encfs_mp) > root_len:
+                    root_len = len(encfs_mp)
+
+        if opts["state"] == "unmounted":
+            print("{:<{nfill}} {:<{rfill}} {:<7} {}"
+                  .format("NAME", "ROOT", "SIZE", "REMOTE",
+                          nfill=name_len, rfill=root_len))
 
         else:
-            name_len = 4
-            mounted_len = 4
-            root_len = 4
-            lin_home = os.path.expanduser("~")
-            for st in self.stashes.keys():
-                if len(st) > name_len:
-                    name_len = len(st)
+            print("{:<{nfill}} {:<7} {:<{rfill}} {:<7} {:<{mfill}} {}"
+                  .format("NAME", "STATE", "ROOT", "SIZE", "PATH",
+                          "REMOTE", nfill=name_len, rfill=root_len,
+                          mfill=mounted_len))
 
-                final_mp = os.path.join(self.mount_point(), st)
-                if os.path.exists(final_mp) and st in self.mounted_stashes():
-                    final_mp = re.sub(lin_home, "~", final_mp)
-                    if len(final_mp) > mounted_len:
-                        mounted_len = len(final_mp)
-
-                encfs_mp = os.path.join(self.encfs_root(), st)
-                if os.path.exists(encfs_mp):
-                    encfs_mp = re.sub(lin_home, "~", encfs_mp)
-                    if len(encfs_mp) > root_len:
-                        root_len = len(encfs_mp)
-
-            if opts.state == "unmounted":
+        if opts["state"] == "mounted" or opts["state"] == "all":
+            for st in self.mounted_stashes():
+                print("{:<{nfill}} {:<7} {:<{rfill}} "
+                      "{:<7} {:<{mfill}} {}"
+                      .format(*self.format_stash(st),
+                              nfill=name_len, rfill=root_len,
+                              mfill=mounted_len))
+        elif opts["state"] == "unmounted":
+            for st in self.unmounted_stashes():
                 print("{:<{nfill}} {:<{rfill}} {:<7} {}"
-                      .format("NAME", "ROOT", "SIZE", "REMOTE",
+                      .format(*self.format_stash(st, "-", True),
                               nfill=name_len, rfill=root_len))
 
-            else:
-                print("{:<{nfill}} {:<7} {:<{rfill}} {:<7} {:<{mfill}} {}"
-                      .format("NAME", "STATE", "ROOT", "SIZE", "PATH",
-                              "REMOTE", nfill=name_len, rfill=root_len,
+        if opts["state"] == "all":
+            for st in self.unmounted_stashes():
+                print("{:<{nfill}} {:<7} {:<{rfill}} {:<7} "
+                      "{:<{mfill}} {}"
+                      .format(*self.format_stash(st, "-"),
+                              nfill=name_len, rfill=root_len,
                               mfill=mounted_len))
-
-            if opts.state == "mounted" or opts.state == "all":
-                for st in self.mounted_stashes():
-                    print("{:<{nfill}} {:<7} {:<{rfill}} "
-                          "{:<7} {:<{mfill}} {}"
-                          .format(*self.format_stash(st),
-                                  nfill=name_len, rfill=root_len,
-                                  mfill=mounted_len))
-            elif opts.state == "unmounted":
-                for st in self.unmounted_stashes():
-                    print("{:<{nfill}} {:<{rfill}} {:<7} {}"
-                          .format(*self.format_stash(st, "-", True),
-                                  nfill=name_len, rfill=root_len))
-
-            if opts.state == "all":
-                for st in self.unmounted_stashes():
-                    print("{:<{nfill}} {:<7} {:<{rfill}} {:<7} "
-                          "{:<{mfill}} {}"
-                          .format(*self.format_stash(st, "-"),
-                                  nfill=name_len, rfill=root_len,
-                                  mfill=mounted_len))
+        return True
 
     def mount(self, opts):
-        self.valid_stash(opts.stash)
-        if opts.stash in self.mounted_stashes():
-            die("{} already mounted.".format(opts.stash))
+        self.valid_stash(opts["stash"])
+        if opts["stash"] in self.mounted_stashes():
+            raise CarpMountError("{} already mounted."
+                                 .format(opts["stash"]))
 
-        loc_stash = self.stashes[opts.stash]
+        loc_stash = self.stashes[opts["stash"]]
         final_mount_point = self.check_dir(
-            os.path.join(self.mount_point(), opts.stash))
-        final_encfs_root = os.path.join(self.encfs_root(), opts.stash)
+            os.path.join(self.mount_point(), opts["stash"]))
+        final_encfs_root = os.path.join(self.encfs_root(), opts["stash"])
         if not os.path.exists(final_encfs_root):
-            die("{} does not exists.".format(final_encfs_root))
+            raise FileNotFoundError(
+                "{} does not exists.".format(final_encfs_root))
 
         success_mount = 1
         os.environ["ENCFS6_CONFIG"] = loc_stash["config_file"]
-        if opts.test:
-            die("{} should be mounted without problem (DRY RUN)"
-                .format(final_mount_point), 0)
+        if opts["test"]:
+            print("{} should be mounted without problem (DRY RUN)"
+                  .format(final_mount_point))
+            return True
 
         if loc_stash["pass_file"]:
             gpg_pass = subprocess.run(
@@ -269,25 +283,29 @@ class Carp():
 
         else:
             success_mount = subprocess.run(
-                ["encfs", final_encfs_root, final_mount_point]
+                ["encfs", final_encfs_root, final_mount_point],
+                check=True
             ).returncode
 
         if success_mount == 0:
             print("{} mounted".format(final_mount_point))
-        else:
-            print("{} NOT mounted".format(final_mount_point))
-        sys.exit(success_mount)
+            return True
+
+        print("{} NOT mounted".format(final_mount_point))
+        return False
 
     def unmount(self, opts):
-        self.valid_stash(opts.stash)
-        if opts.stash in self.unmounted_stashes():
-            die("{} not mounted.".format(opts.stash))
+        self.valid_stash(opts["stash"])
+        if opts["stash"] in self.unmounted_stashes():
+            raise CarpMountError("{} not mounted."
+                                 .format(opts["stash"]))
 
-        final_mount_point = os.path.join(self.mount_point(), opts.stash)
+        final_mount_point = os.path.join(self.mount_point(), opts["stash"])
 
-        if opts.test:
-            die("{} should be unmounted without problem (DRY RUN)"
-                .format(final_mount_point), 0)
+        if opts["test"]:
+            print("{} should be unmounted without problem (DRY RUN)"
+                  .format(final_mount_point), 0)
+            return True
 
         cmd = subprocess.run(
             ["fusermount", "-u", final_mount_point],
@@ -295,28 +313,31 @@ class Carp():
 
         if cmd.returncode == 0:
             print("{} unmounted".format(final_mount_point))
-        else:
-            print("An error happened, {} NOT unmounted"
-                  .format(final_mount_point))
-        sys.exit(cmd.returncode)
+            return True
+
+        print("An error happened, {} NOT unmounted"
+              .format(final_mount_point))
+        return False
 
     def rsync(self, opts, direction="pull"):
-        self.valid_stash(opts.stash)
-        if opts.stash in self.mounted_stashes():
-            die("{} should not be pulled while being mounted."
-                .format(opts.stash))
-        if not self.stashes[opts.stash]["remote_path"]:
-            die("No remote configured for {}".format(opts.stash))
+        self.valid_stash(opts["stash"])
+        if opts["stash"] in self.mounted_stashes():
+            raise CarpMountError(
+                "{} should not be pulled while being mounted."
+                .format(opts["stash"]))
+        if not self.stashes[opts["stash"]]["remote_path"]:
+            raise CarpNoRemoteError("No remote configured for {}"
+                                    .format(opts["stash"]))
 
         av_opt = "-av"
-        if opts.test:
+        if opts["test"]:
             av_opt = "-nav"
 
-        final_encfs_root = os.path.join(self.encfs_root(), opts.stash)
+        final_encfs_root = os.path.join(self.encfs_root(), opts["stash"])
         if final_encfs_root[-1:] != "/":
             final_encfs_root += "/"
 
-        remote_path = self.stashes[opts.stash]["remote_path"]
+        remote_path = self.stashes[opts["stash"]]["remote_path"]
         if remote_path[-1:] != "/":
             remote_path += "/"
 
@@ -332,85 +353,128 @@ class Carp():
         print(" ".join(rsync_cmd))
 
         cmd = subprocess.run(rsync_cmd, check=True)
-        sys.exit(cmd.returncode)
+        if cmd.returncode == 0:
+            return True
+        return False
 
     def pull(self, opts):
-        self.rsync(opts)
+        return self.rsync(opts)
 
     def push(self, opts):
-        self.rsync(opts, "push")
+        return self.rsync(opts, "push")
 
 
-def die(msg, error_code=1):
-    print(msg, file=sys.stderr)
-    sys.exit(error_code)
+class CarpCli:
+    def __init__(self):
+        self.parse_args()
 
+        config_file = os.path.join(xdg_config_home, ".carp", "config")
+        if self.options["config"]:
+            config_file = os.path.expanduser(self.options["config"])
 
-if __name__ == "__main__":
-    parser = ArgumentParser(
-        description="EncFS CLI managing tool",
-        formatter_class=RawDescriptionHelpFormatter,
-        epilog="""\
+        if self.command not in dir(StashManager):
+            self.die("WTF command not recognized!")
+
+        try:
+            carp = StashManager(config_file)
+            if not getattr(carp, self.command)(self.options):
+                sys.exit(1)
+        except (NotADirectoryError, CarpNotAStashError,
+                CarpMountError, CarpNoRemoteError) as e:
+            self.die(str(e))
+
+    def die(self, msg, error_code=1):
+        print(msg, file=sys.stderr)
+        sys.exit(error_code)
+
+    def parse_args(self):
+        parser = ArgumentParser(
+            description="EncFS CLI managing tool",
+            formatter_class=RawDescriptionHelpFormatter,
+            epilog="""\
 Each command has its own help. To access it, do a:
   %(prog)s command --help
 
 For exemple: %(prog)s create --help
 """)
-    parser.add_argument("-c", "--config",
-                        help="Customized config file.")
+        parser.add_argument("-c", "--config",
+                            help="Customized config file.")
 
-    parent_parser = ArgumentParser(add_help=False)
-    parent_parser.add_argument("stash", help="Stash to handle.")
-    parent_parser.add_argument("-t", "--test",
-                               action="store_true",
-                               help="Dry-run.")
+        parent_parser = ArgumentParser(add_help=False)
+        parent_parser.add_argument("stash", help="Stash to handle.")
+        parent_parser.add_argument("-t", "--test",
+                                   action="store_true",
+                                   help="Dry-run.")
 
-    subparsers = parser.add_subparsers(
-        dest="command", title="Commands", help=None,
-        metavar="what to do with your EncFS stashes:",
-        description=None)
-    parser_list = subparsers.add_parser(
-        "list", help="List your EncFS stashes.")
-    parser_create = subparsers.add_parser(
-        "create", help="Create a new EncFS stash.")
-    subparsers.add_parser(
-        "mount", help="Mount an existing EncFS stash.",
-        parents=[parent_parser])
-    subparsers.add_parser(
-        "unmount", help="Unmount a currently mounted EncFS stash.",
-        parents=[parent_parser])
-    subparsers.add_parser(
-        "pull", help="Pull a distant stash.",
-        parents=[parent_parser])
-    subparsers.add_parser(
-        "push", help="Push a distant stash.",
-        parents=[parent_parser])
+        subparsers = parser.add_subparsers(
+            dest="command", title="Commands", help=None,
+            metavar="what to do with your EncFS stashes:",
+            description=None)
+        parser_list = subparsers.add_parser(
+            "list", help="List your EncFS stashes.")
+        parser_create = subparsers.add_parser(
+            "create", help="Create a new EncFS stash.")
+        subparsers.add_parser(
+            "mount", help="Mount an existing EncFS stash.",
+            parents=[parent_parser])
+        subparsers.add_parser(
+            "unmount", help="Unmount a currently mounted EncFS stash.",
+            parents=[parent_parser])
+        subparsers.add_parser(
+            "pull", help="Pull a distant stash.",
+            parents=[parent_parser])
+        subparsers.add_parser(
+            "push", help="Push a distant stash.",
+            parents=[parent_parser])
 
-    parser_create.add_argument(
-        "-s", "--save-pass", action="store_true",
-        help="Save the password in a file.")
-    parser_create.add_argument(
-        "-m", "--mount", action="store_true",
-        help="Mount the stash after creation.")
-    parser_list.add_argument(
-        "state", choices=["mounted", "unmounted", "all"],
-        nargs="?", default="mounted",
-        help="What do you want to list? (default: mounted)")
-    parser_list.add_argument("-r", "--raw",
-                             action="store_true",
-                             help="Don't display stash current state "
-                             "(only useful for 'all' subcommand).")
+        parser_create.add_argument(
+            "-s", "--save-pass", action="store_true",
+            help="Save the password in a file.")
+        parser_create.add_argument(
+            "-m", "--mount", action="store_true",
+            help="Mount the stash after creation.")
+        parser_list.add_argument(
+            "state", choices=["mounted", "unmounted", "all"],
+            nargs="?", default="mounted",
+            help="What do you want to list? (default: mounted)")
+        parser_list.add_argument("-r", "--raw",
+                                 action="store_true",
+                                 help="Don't display stash current state "
+                                 "(only useful for 'all' subcommand).")
 
-    args = parser.parse_args()
+        args = parser.parse_args()
+        self.command = args.command
 
-    if args.command not in subparsers.choices.keys():
-        parser.print_help()
-        sys.exit(1)
+        if self.command not in subparsers.choices.keys():
+            self.die(parser.format_help())
 
-    config_file = os.path.join(xdg_config_home, ".carp", "config")
-    if args.config:
-        config_file = os.path.expanduser(args.config)
+        self.options = getattr(self, self.command)(args)
+        self.options["config"] = args.config
 
-    command_opts = args
+    def list(self, opts):
+        return {
+            "state": opts.state,
+            "raw": opts.raw
+        }
 
-    Carp(args.command, command_opts, config_file)
+    def get_stash(self, opts):
+        return {
+            "stash": opts.stash,
+            "test": opts.test
+        }
+
+    def pull(self, opts):
+        return self.get_stash(opts)
+
+    def push(self, opts):
+        return self.get_stash(opts)
+
+    def mount(self, opts):
+        return self.get_stash(opts)
+
+    def unmount(self, opts):
+        return self.get_stash(opts)
+
+
+if __name__ == "__main__":
+    CarpCli()
