@@ -12,7 +12,7 @@ class CarpCli:
     def __init__(self):
         self.parse_args()
 
-        config_file = os.path.join(xdg_config_home, ".carp", "config")
+        config_file = os.path.join(xdg_config_home, ".carp", "carp.conf")
         if self.options["config"]:
             config_file = os.path.expanduser(self.options["config"])
 
