@@ -3,7 +3,7 @@
 import os
 import sys
 from carp.stash_manager import StashManager, CarpNotAStashError, \
-    CarpMountError, CarpNoRemoteError
+    CarpMountError, CarpNoRemoteError, CarpNotEmptyDirectoryError
 from xdg.BaseDirectory import xdg_config_home
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 
@@ -24,7 +24,8 @@ class CarpCli:
             if not getattr(carp, self.command)(self.options):
                 sys.exit(1)
         except (NotADirectoryError, CarpNotAStashError,
-                CarpMountError, CarpNoRemoteError) as e:
+                CarpMountError, CarpNoRemoteError,
+                CarpNotEmptyDirectoryError) as e:
             self.die(str(e))
 
     def die(self, msg, error_code=1):
