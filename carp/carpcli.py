@@ -77,6 +77,9 @@ For exemple: %(prog)s create --help
         parser_create.add_argument(
             "-m", "--mount", action="store_true",
             help="Mount the stash after creation.")
+        parser_create.add_argument(
+            "rootdir", help="The path to an empty folder, which will "
+            "become the encrypted stash.")
         parser_list.add_argument(
             "state", choices=["mounted", "unmounted", "all"],
             nargs="?", default="mounted",
@@ -118,6 +121,13 @@ For exemple: %(prog)s create --help
 
     def unmount(self, opts):
         return self.get_stash(opts)
+
+    def create(self, opts):
+        return {
+            "rootdir": opts.rootdir,
+            "mount": opts.mount,
+            "save_pass": opts.save_pass
+        }
 
 
 if __name__ == "__main__":

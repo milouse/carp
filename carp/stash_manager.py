@@ -2,7 +2,11 @@
 
 import os
 import re
+import sys
+import time
+import shutil
 import subprocess
+from getpass import getpass
 from configparser import ConfigParser
 from xdg.BaseDirectory import xdg_config_home
 
@@ -16,6 +20,10 @@ class CarpMountError(Exception):
 
 
 class CarpNoRemoteError(Exception):
+    pass
+
+
+class CarpNotEmptyDirectoryError(Exception):
     pass
 
 
@@ -53,21 +61,35 @@ class StashManager:
 
         config_file = os.path.join(config_dir, "encfs6.xml")
         if not os.path.exists(config_file):
-            print("{} does not exists.".format(config_file))
-            return None
+            raise FileNotFoundError(
+                "{} does not exists.".format(config_file))
 
         pass_file = os.path.join(config_dir, "encfs.pass.gpg")
         if not os.path.exists(pass_file):
             pass_file = None
+        else:
+            os.chmod(pass_file, 0o600)
+
+        os.chmod(config_file, 0o600)
 
         remote_path = None
         if "remote_path" in self.config[stash_name]:
             remote_path = self.config[stash_name]["remote_path"]
 
+        final_encfs_root = os.path.join(self.encfs_root(), stash_name)
+        if "encfs_root" in self.config[stash_name]:
+            final_encfs_root = os.path.expanduser(
+                self.config[stash_name]["encfs_root"])
+
+        if not os.path.exists(final_encfs_root):
+            raise FileNotFoundError(
+                "{} does not exists.".format(final_encfs_root))
+
         return {"config_path": config_dir,
                 "config_file": config_file,
                 "pass_file": pass_file,
-                "remote_path": remote_path}
+                "remote_path": remote_path,
+                "encfs_root": final_encfs_root}
 
     def check_dir(self, path):
         if (os.path.exists(path) and
@@ -76,9 +98,17 @@ class StashManager:
                 "{} already exists in your file system but is "
                 "NOT an empty folder.".format(path))
         elif not os.path.exists(path):
+            print("{} does not exists, thus we create an empty one"
+                  .format(path), file=sys.stderr)
             os.makedirs(path)
 
         return path
+
+    def check_dir_is_empty(self, path):
+        if any(os.listdir(path)):
+            raise CarpNotEmptyDirectoryError(
+                "{} is not an empty dirctory. It cannot be used as a "
+                "new EncFS stash.".format(path))
 
     def mount_point(self):
         if self._mount_point:
@@ -141,16 +171,11 @@ class StashManager:
         if not no_state:
             pdata.append(state)
 
-        encfs_mp = os.path.join(self.encfs_root(), stash_name)
+        encfs_mp = self.stashes[stash_name]["encfs_root"]
         if os.path.exists(encfs_mp):
             pdata.append(re.sub(lin_home, "~", encfs_mp))
         else:
             pdata.append("ERR")
-
-        cmd = subprocess.run(["du", "-sh", encfs_mp],
-                             check=True, stdout=subprocess.PIPE)
-        st_size = re.sub(encfs_mp, "", cmd.stdout.decode()).strip()
-        pdata.append(st_size)
 
         if not no_state:
             final_mp = os.path.join(self.mount_point(), stash_name)
@@ -166,84 +191,177 @@ class StashManager:
         else:
             pdata.append("-")
 
+        cmd = subprocess.run(["du", "-sh", encfs_mp],
+                             check=True, stdout=subprocess.PIPE)
+        st_size = re.sub(encfs_mp, "", cmd.stdout.decode()).strip()
+        pdata.append(st_size)
+
         return tuple(pdata)
 
     def list(self, opts):
-        if (opts["state"] == "mounted" and
-           not any(self.mounted_stashes())):
-            return True
-        elif (opts["state"] == "unmounted" and
-              not any(self.unmounted_stashes())):
-            return True
-        elif (opts["state"] == "all" and
-              not any(self.mounted_stashes()) and
-              not any(self.unmounted_stashes())):
+        state = "mounted"
+        if ("state" in opts and
+           opts["state"] in ["mounted", "unmounted", "all"]):
+            state = opts["state"]
+
+        loc_mounted = self.mounted_stashes()
+        loc_unmounted = self.unmounted_stashes()
+
+        if state == "mounted" and not any(loc_mounted):
             return True
 
-        if opts["raw"]:
-            if opts["state"] == "mounted":
-                print("\n".join(self.mounted_stashes()))
+        elif state == "unmounted" and not any(loc_unmounted):
+            return True
 
-            elif opts["state"] == "unmounted":
-                print("\n".join(self.unmounted_stashes()))
+        elif (state == "all" and
+              not any(loc_mounted) and
+              not any(loc_unmounted)):
+            return True
+
+        if "raw" in opts and opts["raw"]:
+            if state == "mounted":
+                print("\n".join(loc_mounted))
+
+            elif state == "unmounted":
+                print("\n".join(loc_unmounted))
 
             else:
-                print("\n".join(self.mounted_stashes()))
-                print("\n".join(self.unmounted_stashes()))
+                print("\n".join(loc_mounted))
+                print("\n".join(loc_unmounted))
 
             return True
 
         name_len = 4
         mounted_len = 4
+        remote_len = 6
         root_len = 4
         lin_home = os.path.expanduser("~")
         for st in self.stashes.keys():
+            if (state == "mounted" and
+               st not in loc_mounted):
+                continue
+            if (state == "unmounted" and
+               st not in loc_unmounted):
+                continue
+
             if len(st) > name_len:
                 name_len = len(st)
 
             final_mp = os.path.join(self.mount_point(), st)
-            if os.path.exists(final_mp) and st in self.mounted_stashes():
+            if os.path.exists(final_mp) and st in loc_mounted:
                 final_mp = re.sub(lin_home, "~", final_mp)
                 if len(final_mp) > mounted_len:
                     mounted_len = len(final_mp)
 
-            encfs_mp = os.path.join(self.encfs_root(), st)
+            encfs_mp = self.stashes[st]["encfs_root"]
             if os.path.exists(encfs_mp):
                 encfs_mp = re.sub(lin_home, "~", encfs_mp)
                 if len(encfs_mp) > root_len:
                     root_len = len(encfs_mp)
 
-        if opts["state"] == "unmounted":
-            print("{:<{nfill}} {:<{rfill}} {:<7} {}"
-                  .format("NAME", "ROOT", "SIZE", "REMOTE",
-                          nfill=name_len, rfill=root_len))
+            remote_mp = self.stashes[st]["remote_path"]
+            if remote_mp and len(remote_mp) > remote_len:
+                    remote_len = len(remote_mp)
+
+        partial_line = "{:<{nfill}} {:<{rfill}} {:<{refill}} {:<7}"
+        complete_line = "{:<{nfill}} {:<7} {:<{rfill}} {:<{mfill}} " \
+                        "{:<{refill}} {:<7}"
+
+        if state == "unmounted":
+            print(partial_line.format("NAME", "ROOT", "REMOTE", "SIZE",
+                                      nfill=name_len, rfill=root_len,
+                                      refill=remote_len))
 
         else:
-            print("{:<{nfill}} {:<7} {:<{rfill}} {:<7} {:<{mfill}} {}"
-                  .format("NAME", "STATE", "ROOT", "SIZE", "PATH",
-                          "REMOTE", nfill=name_len, rfill=root_len,
-                          mfill=mounted_len))
+            print(complete_line.format("NAME", "STATE", "ROOT", "PATH",
+                                       "REMOTE", "SIZE",
+                                       nfill=name_len,
+                                       rfill=root_len,
+                                       mfill=mounted_len,
+                                       refill=remote_len))
 
-        if opts["state"] == "mounted" or opts["state"] == "all":
-            for st in self.mounted_stashes():
-                print("{:<{nfill}} {:<7} {:<{rfill}} "
-                      "{:<7} {:<{mfill}} {}"
-                      .format(*self.format_stash(st),
-                              nfill=name_len, rfill=root_len,
-                              mfill=mounted_len))
-        elif opts["state"] == "unmounted":
-            for st in self.unmounted_stashes():
-                print("{:<{nfill}} {:<{rfill}} {:<7} {}"
-                      .format(*self.format_stash(st, "-", True),
-                              nfill=name_len, rfill=root_len))
+        if state == "mounted" or state == "all":
+            for st in loc_mounted:
+                print(complete_line.format(*self.format_stash(st),
+                                           nfill=name_len,
+                                           rfill=root_len,
+                                           mfill=mounted_len,
+                                           refill=remote_len))
+        elif state == "unmounted":
+            for st in loc_unmounted:
+                print(partial_line.format(*self.format_stash(st, "-", True),
+                                          nfill=name_len,
+                                          rfill=root_len,
+                                          refill=remote_len))
 
-        if opts["state"] == "all":
-            for st in self.unmounted_stashes():
-                print("{:<{nfill}} {:<7} {:<{rfill}} {:<7} "
-                      "{:<{mfill}} {}"
-                      .format(*self.format_stash(st, "-"),
-                              nfill=name_len, rfill=root_len,
-                              mfill=mounted_len))
+        if state == "all":
+            for st in loc_unmounted:
+                print(complete_line.format(*self.format_stash(st, "-"),
+                                           nfill=name_len,
+                                           rfill=root_len,
+                                           mfill=mounted_len,
+                                           refill=remote_len))
+        return True
+
+    def create(self, opts):
+        final_encfs_root = self.check_dir(
+            os.path.expanduser(opts["rootdir"]))
+        self.check_dir_is_empty(final_encfs_root)
+
+        stash_name = os.path.basename(final_encfs_root)
+        final_mount_point = self.check_dir(
+            os.path.join(self.mount_point(), stash_name))
+        self.check_dir_is_empty(final_mount_point)
+
+        cmd = subprocess.run(["encfs", final_encfs_root,
+                              final_mount_point])
+        if cmd.returncode != 0:
+            print("Something went wrong with EncFS",
+                  file=sys.stderr)
+            return False
+
+        time.sleep(2)
+        subprocess.run(["fusermount", "-u", final_mount_point])
+
+        print("EncFS stash successfully created. "
+              "Time to save new configuration.")
+
+        old_config = os.path.join(final_encfs_root, ".encfs6.xml")
+        config_dir = self.check_dir(
+            os.path.join(xdg_config_home, ".carp", stash_name))
+        new_config = os.path.join(config_dir, "encfs6.xml")
+        shutil.move(old_config, new_config)
+        os.chmod(new_config, 0o600)
+
+        self.config[stash_name] = {}
+        self.write_config()
+
+        if "save_pass" in opts and opts["save_pass"]:
+            new_pass = os.path.join(config_dir, "encfs.pass.gpg")
+            print("Please enter your password a last time in order "
+                  "to save it in your home folder. Leave it blank "
+                  "and press enter if you changed your mind.")
+            loc_password = getpass("Password > ")
+            loc_dest = input("gpg key id > ")
+            if loc_password != "":
+                cmd = subprocess.Popen(
+                    ["gpg", "-e", "-r", loc_dest, "-o", new_pass],
+                    stdin=subprocess.PIPE)
+                cmd.communicate(loc_password.encode())
+
+                if cmd.returncode == 0:
+                    os.chmod(new_pass, 0o600)
+
+                else:
+                    print("Something went wrong while saving "
+                          "your password.", file=sys.stderr)
+                    return False
+
+        if "mount" in opts and opts["mount"]:
+            opts["stash"] = stash_name
+            self.stashes[stash_name] = self.init_stash(stash_name)
+            return self.mount(opts)
+
         return True
 
     def mount(self, opts):
@@ -255,14 +373,12 @@ class StashManager:
         loc_stash = self.stashes[opts["stash"]]
         final_mount_point = self.check_dir(
             os.path.join(self.mount_point(), opts["stash"]))
-        final_encfs_root = os.path.join(self.encfs_root(), opts["stash"])
-        if not os.path.exists(final_encfs_root):
-            raise FileNotFoundError(
-                "{} does not exists.".format(final_encfs_root))
+        self.check_dir_is_empty(final_mount_point)
+        final_encfs_root = self.stashes[opts["stash"]]["encfs_root"]
 
         success_mount = 1
         os.environ["ENCFS6_CONFIG"] = loc_stash["config_file"]
-        if opts["test"]:
+        if "test" in opts and opts["test"]:
             print("{} should be mounted without problem (DRY RUN)"
                   .format(final_mount_point))
             return True
@@ -281,8 +397,7 @@ class StashManager:
 
         else:
             success_mount = subprocess.run(
-                ["encfs", final_encfs_root, final_mount_point],
-                check=True
+                ["encfs", final_encfs_root, final_mount_point]
             ).returncode
 
         if success_mount == 0:
@@ -300,14 +415,13 @@ class StashManager:
 
         final_mount_point = os.path.join(self.mount_point(), opts["stash"])
 
-        if opts["test"]:
+        if "test" in opts and opts["test"]:
             print("{} should be unmounted without problem (DRY RUN)"
                   .format(final_mount_point), 0)
             return True
 
         cmd = subprocess.run(
-            ["fusermount", "-u", final_mount_point],
-            check=True)
+            ["fusermount", "-u", final_mount_point])
 
         if cmd.returncode == 0:
             print("{} unmounted".format(final_mount_point))
@@ -328,10 +442,10 @@ class StashManager:
                                     .format(opts["stash"]))
 
         av_opt = "-av"
-        if opts["test"]:
+        if "test" in opts and opts["test"]:
             av_opt = "-nav"
 
-        final_encfs_root = os.path.join(self.encfs_root(), opts["stash"])
+        final_encfs_root = self.stashes[opts["stash"]]["encfs_root"]
         if final_encfs_root[-1:] != "/":
             final_encfs_root += "/"
 
@@ -350,7 +464,7 @@ class StashManager:
 
         print(" ".join(rsync_cmd))
 
-        cmd = subprocess.run(rsync_cmd, check=True)
+        cmd = subprocess.run(rsync_cmd)
         if cmd.returncode == 0:
             return True
         return False
