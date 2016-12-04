@@ -10,13 +10,13 @@ build: $(PKGNAME).1 $(PKGNAME).conf.5
 	@echo "python setup.py build"
 	python setup.py build
 
-$(PKGNAME).1: $(PKGNAME).1.org
-	emacs -Q --batch --eval "(progn (require 'org)(require 'ox-man)(find-file \"$(PKGNAME).1.org\")(org-man-export-to-man)(kill-buffer))"
-	@mv $(PKGNAME).1.man $(PKGNAME).1
+$(PKGNAME).1: man/$(PKGNAME).1.org
+	emacs -Q --batch --eval "(progn (require 'org)(require 'ox-man)(find-file \"man/$(PKGNAME).1.org\")(org-man-export-to-man)(kill-buffer))"
+	@mv man/$(PKGNAME).1.man $(PKGNAME).1
 
-$(PKGNAME).conf.5: $(PKGNAME).conf.5.org
-	emacs -Q --batch --eval "(progn (require 'org)(require 'ox-man)(find-file \"$(PKGNAME).conf.5.org\")(org-man-export-to-man)(kill-buffer))"
-	@mv $(PKGNAME).conf.5.man $(PKGNAME).conf.5
+$(PKGNAME).conf.5: man/$(PKGNAME).conf.5.org
+	emacs -Q --batch --eval "(progn (require 'org)(require 'ox-man)(find-file \"man/$(PKGNAME).conf.5.org\")(org-man-export-to-man)(kill-buffer))"
+	@mv man/$(PKGNAME).conf.5.man $(PKGNAME).conf.5
 
 install: build
 	install -d -m755	$(DEST)/bin
@@ -30,8 +30,8 @@ install: build
 	install -D -m644 LICENSE				$(DEST)/share/licenses/$(PKGNAME)/LICENSE
 	install -D -m644 $(PKGNAME).1.gz		$(DEST)/share/man/man1/$(PKGNAME).1.gz
 	install -D -m644 $(PKGNAME).conf.5.gz	$(DEST)/share/man/man5/$(PKGNAME).conf.5.gz
-	install -D -m644 $(PKGNAME)-completions	$(DEST)/share/bash-completion/completions/$(PKGNAME)
-	install -D -m644 _$(PKGNAME)			$(DEST)/share/zsh/site-functions/_$(PKGNAME)
+	install -D -m644 dist/$(PKGNAME)-completions	$(DEST)/share/bash-completion/completions/$(PKGNAME)
+	install -D -m644 dist/_$(PKGNAME)		$(DEST)/share/zsh/site-functions/_$(PKGNAME)
 	python setup.py install --root=$(PYDEST) &>/dev/null
 
 uninstall:
