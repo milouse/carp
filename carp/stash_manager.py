@@ -383,22 +383,12 @@ class StashManager:
                   .format(final_mount_point))
             return True
 
+        mount_cmd = ["encfs", final_encfs_root, final_mount_point]
         if loc_stash["pass_file"]:
-            gpg_pass = subprocess.run(
-                ["gpg", "-d", loc_stash["pass_file"]],
-                check=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.DEVNULL)
-            cmd = subprocess.Popen(
-                ["encfs", "-S", final_encfs_root, final_mount_point],
-                stdin=subprocess.PIPE)
-            cmd.communicate(gpg_pass.stdout)
-            success_mount = cmd.returncode
+            mount_cmd.insert(1, "--extpass")
+            mount_cmd.insert(2, "gpg -q -d {}".format(loc_stash["pass_file"]))
 
-        else:
-            success_mount = subprocess.run(
-                ["encfs", final_encfs_root, final_mount_point]
-            ).returncode
+        success_mount = subprocess.run(mount_cmd).returncode
 
         if success_mount == 0:
             print("{} mounted".format(final_mount_point))
