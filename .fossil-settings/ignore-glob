@@ -1,7 +1,4 @@
 *.~
 *.mo
 *.git
-nantes/keys.php
-nantes/img/lignes/
-nantes/img/icon*
-nantes/img/favicon.ico
+*.pyc
