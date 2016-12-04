@@ -41,13 +41,15 @@ class StashManager:
         self._encfs_root = None
         self.config["general"]["encfs_root"] = self.encfs_root()
 
+        self.write_config()
+        self.reload_stashes()
+
+    def reload_stashes(self):
         self.stashes = {}
         for sec in self.config.sections():
             loc_emp = self.init_stash(sec)
             if loc_emp:
                 self.stashes[sec] = loc_emp
-
-        self.write_config()
 
     def init_stash(self, stash_name):
         if stash_name == "general":
