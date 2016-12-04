@@ -10,15 +10,13 @@ request could be pushed to github too.
 
 ## Usage
 
-```
-carp [ -c ] create [ -m ] [ -s ] rootdir
+    carp [ -c ] create [ -m ] [ -s ] rootdir
 
-carp [ -c ] [ mount | unmount | pull | push ] name
+    carp [ -c ] [ mount | unmount | pull | push ] name
 
-carp [ -c ] list [ mounted | unmounted | all ]
+    carp [ -c ] list [ mounted | unmounted | all ]
 
-carp [--help]
-```
+    carp [--help]
 
 - **create**: Create a new EncFS stash.
 - **mount**: Mount an existing EncFS stash.
