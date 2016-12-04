@@ -4,10 +4,6 @@
 * NAME
 carp - EncFS CLI managing tool
 
-Main development occurs here: https://projects.depar.is/carp/ That's
-here you must create tickets if you find some bugs. However, pull
-request could be pushed to github too.
-
 * SYNOPSIS
 
 *carp* [ *-c* ] *create* [ *-m* ] [ *-s* ] /rootdir/
