@@ -7,8 +7,9 @@ import time
 import shutil
 import subprocess
 from getpass import getpass
+from datetime import datetime
 from configparser import ConfigParser
-from xdg.BaseDirectory import xdg_config_home
+from xdg.BaseDirectory import xdg_cache_home, xdg_config_home
 
 
 class CarpNotAStashError(Exception):
@@ -140,6 +141,12 @@ class StashManager:
         with open(self.config_file, "w") as f:
             self.config.write(f)
 
+    def write_timestamp(self, stash_name, action):
+        ckey = "last{}".format(action)
+        self.config[stash_name][ckey] = str(round(
+            datetime.now().timestamp()))
+        self.write_config()
+
     def valid_stash(self, stash_name):
         if stash_name not in self.stashes.keys():
             raise CarpNotAStashError("{} is not a known stash."
@@ -171,6 +178,12 @@ class StashManager:
         lin_home = os.path.expanduser("~")
 
         if not no_state:
+            if state == "mounted":
+                pid_file = os.path.join(
+                    xdg_cache_home,
+                    "carp_watcher.{}.pid".format(stash_name))
+                if os.path.exists(pid_file):
+                    state = "watched"
             pdata.append(state)
 
         encfs_mp = self.stashes[stash_name]["encfs_root"]
@@ -181,7 +194,7 @@ class StashManager:
 
         if not no_state:
             final_mp = os.path.join(self.mount_point(), stash_name)
-            if state != "mounted":
+            if state not in ["mounted", "watched"]:
                 pdata.append("-")
             elif os.path.exists(final_mp):
                 pdata.append(re.sub(lin_home, "~", final_mp))
@@ -367,16 +380,17 @@ class StashManager:
         return True
 
     def mount(self, opts):
-        self.valid_stash(opts["stash"])
-        if opts["stash"] in self.mounted_stashes():
+        stash_name = opts["stash"]
+        self.valid_stash(stash_name)
+        if stash_name in self.mounted_stashes():
             raise CarpMountError("{} already mounted."
-                                 .format(opts["stash"]))
+                                 .format(stash_name))
 
-        loc_stash = self.stashes[opts["stash"]]
+        loc_stash = self.stashes[stash_name]
         final_mount_point = self.check_dir(
-            os.path.join(self.mount_point(), opts["stash"]))
+            os.path.join(self.mount_point(), stash_name))
         self.check_dir_is_empty(final_mount_point)
-        final_encfs_root = self.stashes[opts["stash"]]["encfs_root"]
+        final_encfs_root = self.stashes[stash_name]["encfs_root"]
 
         success_mount = 1
         os.environ["ENCFS6_CONFIG"] = loc_stash["config_file"]
@@ -394,18 +408,20 @@ class StashManager:
 
         if success_mount == 0:
             print("{} mounted".format(final_mount_point))
+            self.write_timestamp(stash_name, "mount")
             return True
 
         print("{} NOT mounted".format(final_mount_point))
         return False
 
     def unmount(self, opts):
-        self.valid_stash(opts["stash"])
-        if opts["stash"] in self.unmounted_stashes():
+        stash_name = opts["stash"]
+        self.valid_stash(stash_name)
+        if stash_name in self.unmounted_stashes():
             raise CarpMountError("{} not mounted."
-                                 .format(opts["stash"]))
+                                 .format(stash_name))
 
-        final_mount_point = os.path.join(self.mount_point(), opts["stash"])
+        final_mount_point = os.path.join(self.mount_point(), stash_name)
 
         if "test" in opts and opts["test"]:
             print("{} should be unmounted without problem (DRY RUN)"
@@ -417,6 +433,7 @@ class StashManager:
 
         if cmd.returncode == 0:
             print("{} unmounted".format(final_mount_point))
+            self.write_timestamp(stash_name, "unmount")
             return True
 
         print("An error happened, {} NOT unmounted"
@@ -424,24 +441,25 @@ class StashManager:
         return False
 
     def rsync(self, opts, direction="pull"):
-        self.valid_stash(opts["stash"])
-        if opts["stash"] in self.mounted_stashes():
+        stash_name = opts["stash"]
+        self.valid_stash(stash_name)
+        if stash_name in self.mounted_stashes():
             raise CarpMountError(
                 "{} should not be pulled while being mounted."
-                .format(opts["stash"]))
-        if not self.stashes[opts["stash"]]["remote_path"]:
+                .format(stash_name))
+        if not self.stashes[stash_name]["remote_path"]:
             raise CarpNoRemoteError("No remote configured for {}"
-                                    .format(opts["stash"]))
+                                    .format(stash_name))
 
         av_opt = "-av"
         if "test" in opts and opts["test"]:
             av_opt = "-nav"
 
-        final_encfs_root = self.stashes[opts["stash"]]["encfs_root"]
+        final_encfs_root = self.stashes[stash_name]["encfs_root"]
         if final_encfs_root[-1:] != "/":
             final_encfs_root += "/"
 
-        remote_path = self.stashes[opts["stash"]]["remote_path"]
+        remote_path = self.stashes[stash_name]["remote_path"]
         if remote_path[-1:] != "/":
             remote_path += "/"
 
@@ -458,6 +476,8 @@ class StashManager:
 
         cmd = subprocess.run(rsync_cmd)
         if cmd.returncode == 0:
+            if "test" not in opts or not opts["test"]:
+                self.write_timestamp(stash_name, direction)
             return True
         return False
 

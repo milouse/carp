@@ -4,6 +4,7 @@ import os
 import sys
 from carp.stash_manager import StashManager, CarpNotAStashError, \
     CarpMountError, CarpNoRemoteError, CarpNotEmptyDirectoryError
+from carp.stash_watcher import StashWatcher
 from xdg.BaseDirectory import xdg_config_home
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 
@@ -23,10 +24,13 @@ class CarpCli:
             carp = StashManager(config_file)
             if not getattr(carp, self.command)(self.options):
                 sys.exit(1)
+
         except (NotADirectoryError, CarpNotAStashError,
                 CarpMountError, CarpNoRemoteError,
                 CarpNotEmptyDirectoryError) as e:
             self.die(str(e))
+
+        self.after_run()
 
     def die(self, msg, error_code=1):
         print(msg, file=sys.stderr)
@@ -59,7 +63,7 @@ For exemple: %(prog)s create --help
             "list", help="List your EncFS stashes.")
         parser_create = subparsers.add_parser(
             "create", help="Create a new EncFS stash.")
-        subparsers.add_parser(
+        parser_mount = subparsers.add_parser(
             "mount", help="Mount an existing EncFS stash.",
             parents=[parent_parser])
         subparsers.add_parser(
@@ -81,14 +85,19 @@ For exemple: %(prog)s create --help
         parser_create.add_argument(
             "rootdir", help="The path to an empty folder, which will "
             "become the encrypted stash.")
+
         parser_list.add_argument(
-            "state", choices=["mounted", "unmounted", "all"],
-            nargs="?", default="mounted",
+            "state", nargs="?", default="mounted",
+            choices=["mounted", "unmounted", "all"],
             help="What do you want to list? (default: mounted)")
-        parser_list.add_argument("-r", "--raw",
-                                 action="store_true",
+        parser_list.add_argument("-r", "--raw", action="store_true",
                                  help="Don't display stash current state "
                                  "(only useful for 'all' subcommand).")
+
+        parser_mount.add_argument("-w", "--watch", action="store_true",
+                                  help="Monitor this stash activity "
+                                  "while mounted to prevent you from "
+                                  "pulling unexpected things over it.")
 
         args = parser.parse_args()
         self.command = args.command
@@ -118,7 +127,9 @@ For exemple: %(prog)s create --help
         return self.get_stash(opts)
 
     def mount(self, opts):
-        return self.get_stash(opts)
+        lo = self.get_stash(opts)
+        lo["watch"] = opts.watch
+        return lo
 
     def unmount(self, opts):
         return self.get_stash(opts)
@@ -129,6 +140,17 @@ For exemple: %(prog)s create --help
             "mount": opts.mount,
             "save_pass": opts.save_pass
         }
+
+    def after_run(self):
+        if self.command == "mount" and self.options["watch"]:
+            StashWatcher(self.options["stash"], self.options["config"])
+
+        elif self.command == "unmount":
+            stop_file = os.path.join(xdg_config_home, ".carp",
+                                     self.options["stash"],
+                                     "watch_running")
+            if os.path.exists(stop_file):
+                os.unlink(stop_file)
 
 
 if __name__ == "__main__":
