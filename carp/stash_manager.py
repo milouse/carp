@@ -241,8 +241,7 @@ class StashManager:
                 print("\n".join(loc_unmounted))
 
             else:
-                print("\n".join(loc_mounted))
-                print("\n".join(loc_unmounted))
+                print("\n".join(loc_mounted + loc_unmounted))
 
             return True
 
