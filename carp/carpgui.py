@@ -2,6 +2,7 @@
 
 import os
 import signal
+import subprocess
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 from carp.stash_manager import StashManager, CarpNotAStashError, \
     CarpMountError, CarpNoRemoteError, CarpNotEmptyDirectoryError
@@ -13,11 +14,17 @@ gi.require_version("Notify", "0.7")  # noqa: E402
 from gi.repository import Gtk, GLib, Notify
 
 
+__VERSION__ = "0.1"
+
+
 class CarpGui:
     def __init__(self):
         self.parse_args()
         self.sm = StashManager(self.config_file)
         Notify.init("Carp")
+
+        self.must_autostart = os.path.isfile(os.path.join(
+            xdg_config_home, "autostart", "carp.desktop"))
 
         self.tray = Gtk.StatusIcon()
         self.tray.set_from_icon_name("folder_locked")
@@ -36,6 +43,49 @@ class CarpGui:
         if args.config:
             self.config_file = os.path.expanduser(args.config)
 
+    def build_stash_submenu(self, stash_name, is_unmounted=True):
+        mm = Gtk.Menu()
+
+        current_state_info = Gtk.MenuItem.new_with_label(
+            "Use {} of space".format(self.sm.file_space_usage(stash_name)))
+        current_state_info.set_sensitive(False)
+        mm.append(current_state_info)
+
+        mount_label = "Unmount {0}".format(stash_name)
+        mount_action = "unmount"
+        if is_unmounted:
+            mount_label = "Mount {0}".format(stash_name)
+            mount_action = "mount"
+
+        mi_button = Gtk.MenuItem.new_with_label(mount_label)
+        mi_button.connect("activate", self.encfs_action,
+                          mount_action, stash_name)
+        mm.append(mi_button)
+
+        if is_unmounted:
+            mi_button = Gtk.MenuItem.new_with_label("Pull")
+            mi_button.connect("activate", self.encfs_action,
+                              "pull", stash_name)
+            mm.append(mi_button)
+
+            mi_button = Gtk.MenuItem.new_with_label("Push")
+            mi_button.connect("activate", self.encfs_action,
+                              "push", stash_name)
+            mm.append(mi_button)
+        else:
+            mi_button = Gtk.MenuItem.new_with_label("Open")
+            mi_button.connect("activate", self.open_in_file_browser,
+                              stash_name)
+            mm.append(mi_button)
+
+            mi_button = Gtk.MenuItem.new_with_label("Open in term")
+            mi_button.connect("activate", self.open_in_term, stash_name)
+            mm.append(mi_button)
+
+        mb = Gtk.MenuItem.new_with_label(stash_name)
+        mb.set_submenu(mm)
+        return mb
+
     def display_menu(self, icon, event_button, event_time):
         menu = Gtk.Menu()
 
@@ -49,34 +99,34 @@ class CarpGui:
             self.notify("An error occured while retrieving your "
                         "stashes' list", Notify.Urgency.CRITICAL)
 
-        mounted_menu = Gtk.Menu()
-        for st in mounted_stashes:
-            mi_button = Gtk.MenuItem.new_with_label(
-                "Unmount {0}".format(st))
-            mi_button.connect("activate", self.encfs_action,
-                              "unmount", st)
-            mounted_menu.append(mi_button)
+        if any(mounted_stashes):
+            for st in mounted_stashes:
+                menu.append(self.build_stash_submenu(st, False))
 
-            mounted_button = Gtk.MenuItem.new_with_label(
-                "Mounted stashes")
-            mounted_button.set_submenu(mounted_menu)
-            menu.append(mounted_button)
+            sep = Gtk.SeparatorMenuItem()
+            menu.append(sep)
 
-        unmounted_menu = Gtk.Menu()
         for st in unmounted_stashes:
-            mi_button = Gtk.MenuItem.new_with_label(
-                "Mount {0}".format(st))
-            mi_button.connect("activate", self.encfs_action,
-                              "mount", st)
-            unmounted_menu.append(mi_button)
-
-        unmounted_button = Gtk.MenuItem.new_with_label(
-            "Unounted stashes")
-        unmounted_button.set_submenu(unmounted_menu)
-        menu.append(unmounted_button)
+            menu.append(self.build_stash_submenu(st))
 
         sep = Gtk.SeparatorMenuItem()
         menu.append(sep)
+
+        # Launch at session start
+        mi_button = Gtk.CheckMenuItem("Automatically start")
+        mi_button.set_active(self.must_autostart)
+        menu.append(mi_button)
+        mi_button.connect("toggled", self.toggle_must_autostart)
+
+        # report a bug
+        reportbug = Gtk.MenuItem.new_with_label("Report a bug")
+        menu.append(reportbug)
+        reportbug.connect("activate", self.report_a_bug)
+
+        # show about dialog
+        about = Gtk.ImageMenuItem.new_from_stock(Gtk.STOCK_ABOUT)
+        menu.append(about)
+        about.connect("activate", self.show_about_dialog)
 
         # add quit item
         quit_button = Gtk.ImageMenuItem.new_from_stock(Gtk.STOCK_QUIT)
@@ -88,33 +138,82 @@ class CarpGui:
                    self.tray, event_button, event_time)
 
     def encfs_action(self, widget, action, stash_name):
-        if action not in ["mount", "unmount"]:
+        if action not in ["mount", "unmount", "pull", "push"]:
             return False
 
         try:
             success = getattr(self.sm, action)({"stash": stash_name})
         except (CarpMountError, CarpNotEmptyDirectoryError,
-                CarpNotAStashError):
+                CarpNotAStashError, CarpNoRemoteError):
             success = False
 
         if success:
-            verb = "mounted"
-            if action == "unmount":
-                verb = "unmounted"
-            self.notify("{} correctly {}".format(stash_name, verb))
+            self.notify("{} correctly {}ed".format(stash_name, action))
 
         else:
-            verb = "mounting"
-            if action == "unmount":
-                verb = "unmounting"
-            self.notify("An error occured while {} {}"
-                        .format(verb, stash_name),
+            self.notify("An error occured while {}ing {}"
+                        .format(action, stash_name),
                         Notify.Urgency.CRITICAL)
+
+    def open_in_file_browser(self, widget, stash_name):
+        target_folder = os.path.join(self.sm.mount_point(), stash_name)
+        subprocess.Popen(["xdg-open", target_folder])
+
+    def open_in_term(self, widget, stash_name):
+        target_folder = os.path.join(self.sm.mount_point(), stash_name)
+        os.chdir(target_folder)
+        subprocess.Popen(["st"])
 
     def notify(self, msg, urgency=Notify.Urgency.NORMAL):
         nota = Notify.Notification.new("Carp", msg)
         nota.set_urgency(urgency)
         nota.show()
+
+    def toggle_must_autostart(self, widget):
+        self.must_autostart = widget.get_active()
+        if not os.path.isdir(os.path.join(xdg_config_home, "autostart")):
+            self.must_autostart = False
+            return False
+        file_yet_exists = os.path.isfile(
+            os.path.join(xdg_config_home, "autostart", "carp.desktop"))
+        if not file_yet_exists and self.must_autostart:
+            with open(os.path.join(
+                    xdg_config_home, "autostart", "carp.desktop"),
+                      "w") as asfile:
+                asfile.write("""\
+[Desktop Entry]
+Name=Carp
+Comment=EncFS GUI managing tool
+Exec=carp gui
+Icon=folder_locked
+Terminal=false
+Type=Application
+X-MATE-Autostart-enabled=true
+X-GNOME-Autostart-Delay=20
+StartupNotify=false
+""")
+
+        elif file_yet_exists and not self.must_autostart:
+            os.remove(os.path.join(
+                xdg_config_home, "autostart", "carp.desktop"))
+
+    def report_a_bug(self, widget):
+        subprocess.Popen(
+            ["xdg-open",
+             "https://projects.depar.is/carp/ticket"])
+
+    def show_about_dialog(self, widget):
+        about_dialog = Gtk.AboutDialog()
+        about_dialog.set_destroy_with_parent(True)
+        about_dialog.set_icon_name("folder_locked")
+        about_dialog.set_name("Carp")
+        about_dialog.set_website("https://projects.depar.is/carp")
+        about_dialog.set_comments("EncFS GUI managing tool")
+        about_dialog.set_version(__VERSION__)
+        about_dialog.set_copyright("Carp is released under the WTFPL")
+        about_dialog.set_authors(["Étienne Deparis <etienne@depar.is>"])
+        about_dialog.run()
+        about_dialog.destroy()
 
     def kthxbye(self, widget, data=None):
         Gtk.main_quit()
