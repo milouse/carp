@@ -11,7 +11,7 @@ with open(
     long_description = f.read()
 
 setup(name="carp",
-      version="0.1",
+      version="0.2",
       description="EncFS CLI managing tool",
       long_description=long_description,
       author="Étienne Deparis",

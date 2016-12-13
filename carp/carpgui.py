@@ -14,7 +14,7 @@ gi.require_version("Notify", "0.7")  # noqa: E402
 from gi.repository import Gtk, GLib, Notify
 
 
-__VERSION__ = "0.1"
+__VERSION__ = "0.2"
 
 
 class CarpGui:
