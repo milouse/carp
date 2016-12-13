@@ -18,5 +18,6 @@ if __name__ == "__main__":
                              Gtk.main_quit, None)
         carp.CarpGui()
         Gtk.main()
+
     else:
         carp.CarpCli()
