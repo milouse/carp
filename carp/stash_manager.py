@@ -173,6 +173,12 @@ class StashManager:
         return [st for st in self.stashes.keys()
                 if st not in self.mounted_stashes()]
 
+    def file_space_usage(self, stash_name):
+        encfs_mp = self.stashes[stash_name]["encfs_root"]
+        cmd = subprocess.run(["du", "-sh", encfs_mp],
+                             check=True, stdout=subprocess.PIPE)
+        return re.sub(encfs_mp, "", cmd.stdout.decode()).strip()
+
     def format_stash(self, stash_name, state="mounted", no_state=False):
         pdata = [stash_name]
         lin_home = os.path.expanduser("~")
@@ -206,10 +212,7 @@ class StashManager:
         else:
             pdata.append("-")
 
-        cmd = subprocess.run(["du", "-sh", encfs_mp],
-                             check=True, stdout=subprocess.PIPE)
-        st_size = re.sub(encfs_mp, "", cmd.stdout.decode()).strip()
-        pdata.append(st_size)
+        pdata.append(self.file_space_usage(stash_name))
 
         return tuple(pdata)
 
