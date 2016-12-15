@@ -430,7 +430,7 @@ class StashManager:
 
         if "test" in opts and opts["test"]:
             print("{} should be unmounted without problem (DRY RUN)"
-                  .format(final_mount_point), 0)
+                  .format(final_mount_point))
             return True
 
         cmd = subprocess.run(
