@@ -405,7 +405,7 @@ class StashManager:
         if loc_stash["pass_file"]:
             mount_cmd.insert(1, "--extpass")
             mount_cmd.insert(2, "gpg -q -d {}".format(loc_stash["pass_file"]))
-        elif opts["pass_cmd"]:
+        elif "pass_cmd" in opts and opts["pass_cmd"] != "":
             mount_cmd.insert(1, "--extpass")
             mount_cmd.insert(2, opts["pass_cmd"])
 
