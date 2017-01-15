@@ -11,6 +11,13 @@ from datetime import datetime
 from configparser import ConfigParser
 from xdg.BaseDirectory import xdg_cache_home, xdg_config_home
 
+import gettext
+
+CARP_L10N_PATH = "./locales"
+
+gettext.install("carp", CARP_L10N_PATH)
+_ = gettext.gettext
+
 
 class CarpNotAStashError(Exception):
     pass
@@ -69,7 +76,7 @@ class StashManager:
         config_file = os.path.join(config_dir, "encfs6.xml")
         if not os.path.exists(config_file):
             raise FileNotFoundError(
-                "{} does not exists.".format(config_file))
+                _("{0} does not exists.").format(config_file))
 
         pass_file = os.path.join(config_dir, "encfs.pass.gpg")
         if not os.path.exists(pass_file):
@@ -90,7 +97,7 @@ class StashManager:
 
         if not os.path.exists(final_encfs_root):
             raise FileNotFoundError(
-                "{} does not exists.".format(final_encfs_root))
+                _("{0} does not exists.").format(final_encfs_root))
 
         return {"config_path": config_dir,
                 "config_file": config_file,
@@ -102,10 +109,10 @@ class StashManager:
         if (os.path.exists(path) and
            not os.path.isdir(path)):
             raise NotADirectoryError(
-                "{} already exists in your file system but is "
-                "NOT an empty folder.".format(path))
+                _("{0} already exists in your file system but is "
+                  "NOT an empty folder.").format(path))
         elif not os.path.exists(path):
-            print("{} does not exists, thus we create an empty one"
+            print(_("{0} does not exists, thus we create an empty one")
                   .format(path), file=sys.stderr)
             os.makedirs(path)
 
@@ -114,8 +121,8 @@ class StashManager:
     def check_dir_is_empty(self, path):
         if any(os.listdir(path)):
             raise CarpNotEmptyDirectoryError(
-                "{} is not an empty dirctory. It cannot be used as a "
-                "new EncFS stash.".format(path))
+                _("{0} is not an empty dirctory. It cannot be used as a "
+                  "new EncFS stash.").format(path))
 
     def mount_point(self):
         if self._mount_point:
@@ -153,7 +160,7 @@ class StashManager:
 
     def valid_stash(self, stash_name):
         if stash_name not in self.stashes.keys():
-            raise CarpNotAStashError("{} is not a known stash."
+            raise CarpNotAStashError(_("{0} is not a known stash.")
                                      .format(stash_name))
 
     def mounted_stashes(self):
@@ -337,13 +344,13 @@ class StashManager:
         cmd = subprocess.run(["encfs", final_encfs_root,
                               final_mount_point])
         if cmd.returncode != 0:
-            raise CarpSubcommandError("Something went wrong with EncFS")
+            raise CarpSubcommandError(_("Something went wrong with EncFS"))
 
         time.sleep(2)
         subprocess.run(["fusermount", "-u", final_mount_point])
 
-        print("EncFS stash successfully created. "
-              "Time to save new configuration.")
+        print(_("EncFS stash successfully created. "
+                "Time to save new configuration."))
 
         old_config = os.path.join(final_encfs_root, ".encfs6.xml")
         config_dir = self.check_dir(
@@ -357,9 +364,9 @@ class StashManager:
 
         if "save_pass" in opts and opts["save_pass"]:
             new_pass = os.path.join(config_dir, "encfs.pass.gpg")
-            print("Please enter your password a last time in order "
-                  "to save it in your home folder. Leave it blank "
-                  "and press enter if you changed your mind.")
+            print(_("Please enter your password a last time in order "
+                    "to save it in your home folder. Leave it blank "
+                    "and press enter if you changed your mind."))
             loc_password = getpass("Password > ")
             loc_dest = input("gpg key id > ")
             if loc_password != "":
@@ -373,7 +380,7 @@ class StashManager:
 
                 else:
                     raise CarpSubcommandError(
-                        "Something went wrong while saving your password.")
+                        _("Something went wrong while saving your password."))
 
         if "mount" in opts and opts["mount"]:
             opts["stash"] = stash_name
@@ -386,8 +393,8 @@ class StashManager:
         stash_name = opts["stash"]
         self.valid_stash(stash_name)
         if stash_name in self.mounted_stashes():
-            raise CarpMountError("{} already mounted."
-                                 .format(stash_name))
+            raise CarpMountError(_("{0} already mounted."
+                                 .format(stash_name)))
 
         loc_stash = self.stashes[stash_name]
         final_mount_point = self.check_dir(
@@ -398,7 +405,7 @@ class StashManager:
         success_mount = 1
         os.environ["ENCFS6_CONFIG"] = loc_stash["config_file"]
         if "test" in opts and opts["test"]:
-            print("{} should be mounted without problem (DRY RUN)"
+            print(_("{0} should be mounted without problem (DRY RUN)")
                   .format(final_mount_point))
             return True
 
@@ -413,24 +420,24 @@ class StashManager:
         success_mount = subprocess.run(mount_cmd).returncode
 
         if success_mount == 0:
-            print("{} mounted".format(final_mount_point))
+            print(_("{0} mounted").format(final_mount_point))
             self.write_timestamp(stash_name, "mount")
             return True
 
-        print("{} NOT mounted".format(final_mount_point))
+        print("{0} NOT mounted".format(final_mount_point))
         return False
 
     def unmount(self, opts):
         stash_name = opts["stash"]
         self.valid_stash(stash_name)
         if stash_name in self.unmounted_stashes():
-            raise CarpMountError("{} not mounted."
+            raise CarpMountError(_("{0} not mounted.")
                                  .format(stash_name))
 
         final_mount_point = os.path.join(self.mount_point(), stash_name)
 
         if "test" in opts and opts["test"]:
-            print("{} should be unmounted without problem (DRY RUN)"
+            print(_("{0} should be unmounted without problem (DRY RUN)")
                   .format(final_mount_point))
             return True
 
@@ -438,11 +445,11 @@ class StashManager:
             ["fusermount", "-u", final_mount_point])
 
         if cmd.returncode == 0:
-            print("{} unmounted".format(final_mount_point))
+            print(_("{0} unmounted").format(final_mount_point))
             self.write_timestamp(stash_name, "unmount")
             return True
 
-        print("An error happened, {} NOT unmounted"
+        print(_("An error happened, {0} NOT unmounted")
               .format(final_mount_point))
         return False
 
@@ -451,10 +458,10 @@ class StashManager:
         self.valid_stash(stash_name)
         if stash_name in self.mounted_stashes():
             raise CarpMountError(
-                "{} should not be pulled while being mounted."
+                _("{0} should not be pulled while being mounted.")
                 .format(stash_name))
         if not self.stashes[stash_name]["remote_path"]:
-            raise CarpNoRemoteError("No remote configured for {}"
+            raise CarpNoRemoteError(_("No remote configured for {0}")
                                     .format(stash_name))
 
         av_opt = "-av"

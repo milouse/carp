@@ -9,6 +9,13 @@ from carp.stash_watcher import StashWatcher
 from xdg.BaseDirectory import xdg_config_home
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 
+import gettext
+
+CARP_L10N_PATH = "./locales"
+
+gettext.install("carp", CARP_L10N_PATH)
+_ = gettext.gettext
+
 
 class CarpCli:
     def __init__(self):
@@ -19,7 +26,7 @@ class CarpCli:
             config_file = os.path.expanduser(self.options["config"])
 
         if self.command not in dir(StashManager):
-            self.die("WTF command not recognized!")
+            self.die(_("WTF command not recognized!"))
 
         try:
             carp = StashManager(config_file)
@@ -36,7 +43,7 @@ class CarpCli:
                 work_on_stash = carp.unmounted_stashes()
 
             for st in work_on_stash:
-                print("Working on {}".format(st))
+                print(_("Working on {0}").format(st))
                 self.options["stash"] = st
                 self.run(carp, False)
 
@@ -49,7 +56,7 @@ class CarpCli:
 
     def parse_args(self):
         parser = ArgumentParser(
-            description="EncFS CLI managing tool",
+            description=_("EncFS CLI managing tool"),
             formatter_class=RawDescriptionHelpFormatter,
             epilog="""\
 Each command has its own help. To access it, do a:
@@ -58,7 +65,7 @@ Each command has its own help. To access it, do a:
 For exemple: %(prog)s create --help
 """)
         parser.add_argument("-c", "--config",
-                            help="Customized config file.")
+                            help=_("Customized config file."))
 
         parent_parser = ArgumentParser(add_help=False)
         parent_parser.add_argument("stash", help="Stash to handle.")

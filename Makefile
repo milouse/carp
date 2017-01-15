@@ -1,4 +1,5 @@
 DEST=/usr
+L10N=fr
 PYDEST=/
 PKGNAME=carp
 
@@ -7,6 +8,7 @@ all: build
 build: $(PKGNAME).1 $(PKGNAME).conf.5
 	gzip -k $(PKGNAME).1
 	gzip -k $(PKGNAME).conf.5
+	sed -i "s|CARP_L10N_PATH = \"./locales\"|CARP_L10N_PATH = \"$(DEST)/share/locale\"|" $(PKGNAME)/*.py
 	@echo "python setup.py build"
 	python setup.py build
 
@@ -32,6 +34,12 @@ install: build
 	install -D -m644 $(PKGNAME).conf.5.gz	$(DEST)/share/man/man5/$(PKGNAME).conf.5.gz
 	install -D -m644 dist/$(PKGNAME)-completions	$(DEST)/share/bash-completion/completions/$(PKGNAME)
 	install -D -m644 dist/_$(PKGNAME)		$(DEST)/share/zsh/site-functions/_$(PKGNAME)
+
+	for lang in $(L10N) ; do \
+	  install -d -m755 $(DEST)/share/locale/$$lang/LC_MESSAGES ; \
+	  msgfmt -o $(DEST)/share/locale/$$lang/LC_MESSAGES/carp.mo locales/$$lang/LC_MESSAGES/carp.po ; \
+	done
+
 	python setup.py install --root=$(PYDEST) &>/dev/null
 
 uninstall:
@@ -42,9 +50,15 @@ uninstall:
 	rm $(DEST)/share/man/man5/$(PKGNAME).conf.5.gz
 	rm $(DEST)/share/bash-completion/completions/$(PKGNAME)
 	rm $(DEST)/share/zsh/site-functions/_$(PKGNAME)
-	rm -rf $(PYDEST)/usr/lib/python3.5/site-packages/carp*
+
+	for lang in $(L10N) ; do \
+	  rm $(DEST)/share/locale/$$lang/LC_MESSAGES/carp.mo ; \
+	done
+
+	rm -rf $(PYDEST)/usr/lib/python3.6/site-packages/carp*
 
 clean:
+	@sed -i "s|CARP_L10N_PATH = \"$(DEST)/share/locale\"|CARP_L10N_PATH = \"./locales\"|" $(PKGNAME)/*.py
 	@rm -rf build carp.egg-info
 	@rm $(PKGNAME).1.gz
 	@rm $(PKGNAME).1

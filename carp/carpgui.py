@@ -13,8 +13,16 @@ gi.require_version('Gtk', '3.0')  # noqa: E402
 gi.require_version("Notify", "0.7")  # noqa: E402
 from gi.repository import Gtk, GLib, Notify
 
+import gettext
 
-__VERSION__ = "0.2"
+CARP_L10N_PATH = "./locales"
+
+gettext.install("carp", CARP_L10N_PATH)
+_ = gettext.gettext
+
+CARP_POSSIBLE_STATUS = [_("mount"), _("unmount"), _("pull"), _("push")]
+
+__VERSION__ = "0.3"
 
 
 class CarpGui:
@@ -33,10 +41,10 @@ class CarpGui:
 
     def parse_args(self):
         parser = ArgumentParser(
-            description="EncFS GUI managing tool",
+            description=_("EncFS GUI managing tool"),
             formatter_class=RawDescriptionHelpFormatter)
         parser.add_argument("-c", "--config",
-                            help="Customized config file.")
+                            help=_("Customized config file."))
         args = parser.parse_args()
 
         self.config_file = os.path.join(xdg_config_home, ".carp", "carp.conf")
@@ -47,14 +55,14 @@ class CarpGui:
         mm = Gtk.Menu()
 
         current_state_info = Gtk.MenuItem.new_with_label(
-            "Use {} of space".format(self.sm.file_space_usage(stash_name)))
+            _("Use {0} of space").format(self.sm.file_space_usage(stash_name)))
         current_state_info.set_sensitive(False)
         mm.append(current_state_info)
 
-        mount_label = "Unmount {0}".format(stash_name)
+        mount_label = _("Unmount {0}").format(stash_name)
         mount_action = "unmount"
         if is_unmounted:
-            mount_label = "Mount {0}".format(stash_name)
+            mount_label = _("Mount {0}").format(stash_name)
             mount_action = "mount"
 
         mi_button = Gtk.MenuItem.new_with_label(mount_label)
@@ -63,22 +71,22 @@ class CarpGui:
         mm.append(mi_button)
 
         if is_unmounted:
-            mi_button = Gtk.MenuItem.new_with_label("Pull")
+            mi_button = Gtk.MenuItem.new_with_label(_("Pull"))
             mi_button.connect("activate", self.encfs_action,
                               "pull", stash_name)
             mm.append(mi_button)
 
-            mi_button = Gtk.MenuItem.new_with_label("Push")
+            mi_button = Gtk.MenuItem.new_with_label(_("Push"))
             mi_button.connect("activate", self.encfs_action,
                               "push", stash_name)
             mm.append(mi_button)
         else:
-            mi_button = Gtk.MenuItem.new_with_label("Open")
+            mi_button = Gtk.MenuItem.new_with_label(_("Open"))
             mi_button.connect("activate", self.open_in_file_browser,
                               stash_name)
             mm.append(mi_button)
 
-            mi_button = Gtk.MenuItem.new_with_label("Open in term")
+            mi_button = Gtk.MenuItem.new_with_label(_("Open in term"))
             mi_button.connect("activate", self.open_in_term, stash_name)
             mm.append(mi_button)
 
@@ -96,8 +104,8 @@ class CarpGui:
         except (FileNotFoundError, NotADirectoryError):
             mounted_stashes = []
             unmounted_stashes = []
-            self.notify("An error occured while retrieving your "
-                        "stashes' list", Notify.Urgency.CRITICAL)
+            self.notify(_("An error occured while retrieving your "
+                          "stashes' list"), Notify.Urgency.CRITICAL)
 
         if any(mounted_stashes):
             for st in mounted_stashes:
@@ -113,13 +121,13 @@ class CarpGui:
         menu.append(sep)
 
         # Launch at session start
-        mi_button = Gtk.CheckMenuItem("Automatically start")
+        mi_button = Gtk.CheckMenuItem(_("Automatically start"))
         mi_button.set_active(self.must_autostart)
         menu.append(mi_button)
         mi_button.connect("toggled", self.toggle_must_autostart)
 
         # report a bug
-        reportbug = Gtk.MenuItem.new_with_label("Report a bug")
+        reportbug = Gtk.MenuItem.new_with_label(_("Report a bug"))
         menu.append(reportbug)
         reportbug.connect("activate", self.report_a_bug)
 
@@ -152,11 +160,12 @@ class CarpGui:
             success = False
 
         if success:
-            self.notify("{} correctly {}ed".format(stash_name, action))
+            self.notify(_("{0} correctly {1}ed")
+                        .format(stash_name, CARP_POSSIBLE_STATUS[action]))
 
         else:
-            self.notify("An error occured while {}ing {}"
-                        .format(action, stash_name),
+            self.notify(_("An error occured while {1}ing {0}")
+                        .format(stash_name, CARP_POSSIBLE_STATUS[action]),
                         Notify.Urgency.CRITICAL)
 
     def open_in_file_browser(self, widget, stash_name):
@@ -212,9 +221,9 @@ StartupNotify=false
         about_dialog.set_icon_name("folder_locked")
         about_dialog.set_name("Carp")
         about_dialog.set_website("https://projects.depar.is/carp")
-        about_dialog.set_comments("EncFS GUI managing tool")
+        about_dialog.set_comments(_("EncFS GUI managing tool"))
         about_dialog.set_version(__VERSION__)
-        about_dialog.set_copyright("Carp is released under the WTFPL")
+        about_dialog.set_copyright(_("Carp is released under the WTFPL"))
         about_dialog.set_authors(["Étienne Deparis <etienne@depar.is>"])
         about_dialog.run()
         about_dialog.destroy()
