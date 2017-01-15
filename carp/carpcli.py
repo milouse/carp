@@ -3,7 +3,8 @@
 import os
 import sys
 from carp.stash_manager import StashManager, CarpNotAStashError, \
-    CarpMountError, CarpNoRemoteError, CarpNotEmptyDirectoryError
+    CarpMountError, CarpNoRemoteError, CarpNotEmptyDirectoryError, \
+    CarpSubcommandError
 from carp.stash_watcher import StashWatcher
 from xdg.BaseDirectory import xdg_config_home
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
@@ -22,15 +23,25 @@ class CarpCli:
 
         try:
             carp = StashManager(config_file)
-            if not getattr(carp, self.command)(self.options):
-                sys.exit(1)
-
-        except (NotADirectoryError, CarpNotAStashError,
-                CarpMountError, CarpNoRemoteError,
+        except (FileNotFoundError, NotADirectoryError,
                 CarpNotEmptyDirectoryError) as e:
             self.die(str(e))
 
-        self.after_run()
+        if self.command in ["mount", "unmount", "pull", "push"] and \
+           "stash" in self.options and self.options["stash"] == "all":
+            work_on_stash = []
+            if self.command == "unmount":
+                work_on_stash = carp.mounted_stashes()
+            else:
+                work_on_stash = carp.unmounted_stashes()
+
+            for st in work_on_stash:
+                print("Working on {}".format(st))
+                self.options["stash"] = st
+                self.run(carp, False)
+
+        else:
+            self.run(carp)
 
     def die(self, msg, error_code=1):
         print(msg, file=sys.stderr)
@@ -140,6 +151,25 @@ For exemple: %(prog)s create --help
             "mount": opts.mount,
             "save_pass": opts.save_pass
         }
+
+    def run(self, carp, can_exit=True):
+        try:
+            if not getattr(carp, self.command)(self.options):
+                if can_exit:
+                    sys.exit(1)
+                else:
+                    return False
+
+        except (NotADirectoryError, CarpNotAStashError,
+                CarpMountError, CarpNoRemoteError,
+                CarpNotEmptyDirectoryError, CarpSubcommandError) as e:
+            if can_exit:
+                self.die(str(e))
+            else:
+                print(str(e))
+                return False
+
+        self.after_run()
 
     def after_run(self):
         if self.command == "mount" and self.options["watch"]:

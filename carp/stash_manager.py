@@ -28,6 +28,10 @@ class CarpNotEmptyDirectoryError(Exception):
     pass
 
 
+class CarpSubcommandError(Exception):
+    pass
+
+
 class StashManager:
     def __init__(self, config_file):
         self.config_file = config_file
@@ -333,9 +337,7 @@ class StashManager:
         cmd = subprocess.run(["encfs", final_encfs_root,
                               final_mount_point])
         if cmd.returncode != 0:
-            print("Something went wrong with EncFS",
-                  file=sys.stderr)
-            return False
+            raise CarpSubcommandError("Something went wrong with EncFS")
 
         time.sleep(2)
         subprocess.run(["fusermount", "-u", final_mount_point])
@@ -370,9 +372,8 @@ class StashManager:
                     os.chmod(new_pass, 0o600)
 
                 else:
-                    print("Something went wrong while saving "
-                          "your password.", file=sys.stderr)
-                    return False
+                    raise CarpSubcommandError(
+                        "Something went wrong while saving your password.")
 
         if "mount" in opts and opts["mount"]:
             opts["stash"] = stash_name

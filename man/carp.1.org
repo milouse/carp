@@ -50,7 +50,10 @@ always be mounted under /~/Private/.
       will lead to a dry-run of rsync. For *mount* and *unmount* it will
       only check if the required directories are in place.
  - /name/ :: The name of one of your EncFS stash. You can find these
-      names by using the *carp list* command.
+      names by using the *carp list* command. You can also pass the
+      special name *all* to work on all relevant stashes (mounted
+      stashes for the unmount all command or unmounted stashes for the
+      mount all, pull all or push all).
 
 * FILES
 
