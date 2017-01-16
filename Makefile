@@ -55,7 +55,7 @@ uninstall:
 	  rm $(DEST)/share/locale/$$lang/LC_MESSAGES/carp.mo ; \
 	done
 
-	rm -rf $(PYDEST)/usr/lib/python3.6/site-packages/carp*
+	rm -rf $(PYDEST)usr/lib/python3.6/site-packages/carp*
 
 clean:
 	@sed -i "s|CARP_L10N_PATH = \"$(DEST)/share/locale\"|CARP_L10N_PATH = \"./locales\"|" $(PKGNAME)/*.py
