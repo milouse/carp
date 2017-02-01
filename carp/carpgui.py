@@ -20,7 +20,12 @@ CARP_L10N_PATH = "./locales"
 gettext.install("carp", CARP_L10N_PATH)
 _ = gettext.gettext
 
-CARP_POSSIBLE_STATUS = [_("mount"), _("unmount"), _("pull"), _("push")]
+CARP_POSSIBLE_STATUS = {
+    "mount": _("mount"),
+    "unmount": _("unmount"),
+    "pull": _("pull"),
+    "push": _("push")
+}
 
 __VERSION__ = "0.3"
 
