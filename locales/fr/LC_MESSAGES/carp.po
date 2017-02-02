@@ -7,194 +7,207 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Carp 0.3\n"
 "Report-Msgid-Bugs-To: bugs@depar.is\n"
-"POT-Creation-Date: 2017-01-15 19:53+0100\n"
-"PO-Revision-Date: 2017-01-15 20:08+0100\n"
-"Last-Translator:  <etienne@depar.is>\n"
+"POT-Creation-Date: 2017-02-02 10:19+0100\n"
+"PO-Revision-Date: 2017-02-02 10:20+0100\n"
+"Last-Translator: etienne@depar.is\n"
 "Language-Team: French\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Generator: Poedit 1.8.11\n"
 
-#: carp/carpcli.py:29
+#: carp/carpcli.py:28
 msgid "WTF command not recognized!"
 msgstr "Wow, la commande n'a pas été reconnue !"
 
-#: carp/carpcli.py:46
+#: carp/carpcli.py:45
 #, python-brace-format
 msgid "Working on {0}"
 msgstr "Travail sur {0}"
 
-#: carp/carpcli.py:59
+#: carp/carpcli.py:58
 msgid "EncFS CLI managing tool"
 msgstr "Outil en ligne de commande pour EncFS"
 
-#: carp/carpcli.py:68 carp/carpgui.py:47
+#: carp/carpcli.py:67 carp/carpgui.py:52
 msgid "Customized config file."
 msgstr "Fichier de configuration personnalisé."
 
-#: carp/carpgui.py:23
+#: carp/carpgui.py:24
 msgid "mount"
 msgstr "mont"
 
-#: carp/carpgui.py:23
+#: carp/carpgui.py:25
 msgid "unmount"
 msgstr "démont"
 
-#: carp/carpgui.py:23
+#: carp/carpgui.py:26
 msgid "pull"
 msgstr "récupér"
 
-#: carp/carpgui.py:23
+#: carp/carpgui.py:27
 msgid "push"
 msgstr "pouss"
 
-#: carp/carpgui.py:44 carp/carpgui.py:224
+#: carp/carpgui.py:49 carp/carpgui.py:234
 msgid "EncFS GUI managing tool"
 msgstr "Interface de gestion pour EncFS"
 
-#: carp/carpgui.py:58
+#: carp/carpgui.py:63
 #, python-brace-format
 msgid "Use {0} of space"
 msgstr "{0} d'espace utilisé"
 
-#: carp/carpgui.py:62
+#: carp/carpgui.py:67
 #, python-brace-format
 msgid "Unmount {0}"
 msgstr "Démonter {0}"
 
-#: carp/carpgui.py:65
+#: carp/carpgui.py:70
 #, python-brace-format
 msgid "Mount {0}"
 msgstr "Monter {0}"
 
-#: carp/carpgui.py:74
-msgid "Pull"
+#: carp/carpgui.py:80
+#, python-brace-format
+msgid "Pull {0}"
 msgstr "Récupérer {0}"
 
-#: carp/carpgui.py:79
-msgid "Push"
+#: carp/carpgui.py:86
+#, python-brace-format
+msgid "Push {0}"
 msgstr "Pousser {0}"
 
-#: carp/carpgui.py:84
+#: carp/carpgui.py:91
 msgid "Open"
 msgstr "Ouvrir"
 
-#: carp/carpgui.py:89
+#: carp/carpgui.py:96
 msgid "Open in term"
 msgstr "Ouvrir dans un terminal"
 
-#: carp/carpgui.py:107
+#: carp/carpgui.py:114
 msgid "An error occured while retrieving your stashes' list"
-msgstr "Une erreur est survenue lors de la récupération de votre liste de coffres fort"
+msgstr ""
+"Une erreur est survenue lors de la récupération de votre liste de coffres "
+"fort"
 
-#: carp/carpgui.py:124
+#: carp/carpgui.py:131
 msgid "Automatically start"
 msgstr "Lancer au démarrage de la session"
 
-#: carp/carpgui.py:130
+#: carp/carpgui.py:137
 msgid "Report a bug"
 msgstr "Rapporter un bogue"
 
-#: carp/carpgui.py:163
+#: carp/carpgui.py:173
 #, python-brace-format
 msgid "{0} correctly {1}ed"
 msgstr "{0} a été correctement {1}é"
 
-#: carp/carpgui.py:167
+#: carp/carpgui.py:177
 #, python-brace-format
 msgid "An error occured while {1}ing {0}"
 msgstr "Une erreur est survenue alors que le système {1}ait {0}"
 
-#: carp/carpgui.py:226
+#: carp/carpgui.py:236
 msgid "Carp is released under the WTFPL"
 msgstr "Carp est disponible selon les termes de la WTFPL"
 
-#: carp/stash_manager.py:79 carp/stash_manager.py:100
+#: carp/stash_manager.py:81 carp/stash_manager.py:102
 #, python-brace-format
 msgid "{0} does not exists."
 msgstr "{0} n'existe pas."
 
-#: carp/stash_manager.py:112
+#: carp/stash_manager.py:114
 #, python-brace-format
 msgid "{0} already exists in your file system but is NOT an empty folder."
 msgstr "{0} existe déjà sur votre système de fichiers mais n'est PAS vide."
 
-#: carp/stash_manager.py:115
+#: carp/stash_manager.py:117
 #, python-brace-format
 msgid "{0} does not exists, thus we create an empty one"
 msgstr "{0} n'existe pas, nous allons donc le créer"
 
-#: carp/stash_manager.py:124
+#: carp/stash_manager.py:126
 #, python-brace-format
 msgid "{0} is not an empty dirctory. It cannot be used as a new EncFS stash."
-msgstr "{0} n'est pas un dossier vide et ne peut donc pas être utilisé comme un nouveau coffre fort EncFS."
+msgstr ""
+"{0} n'est pas un dossier vide et ne peut donc pas être utilisé comme un "
+"nouveau coffre fort EncFS."
 
-#: carp/stash_manager.py:163
+#: carp/stash_manager.py:165
 #, python-brace-format
 msgid "{0} is not a known stash."
 msgstr "{0} n'est pas un coffre fort connu."
 
-#: carp/stash_manager.py:347
+#: carp/stash_manager.py:349
 msgid "Something went wrong with EncFS"
 msgstr "Une erreur est survenue lors de l'appel à EncFS"
 
-#: carp/stash_manager.py:352
+#: carp/stash_manager.py:354
 msgid "EncFS stash successfully created. Time to save new configuration."
-msgstr "Le nouveau coffre fort EncFS a été créé avec succès. Passons à sa configuration."
+msgstr ""
+"Le nouveau coffre fort EncFS a été créé avec succès. Passons à sa "
+"configuration."
 
-#: carp/stash_manager.py:367
+#: carp/stash_manager.py:369
 msgid ""
 "Please enter your password a last time in order to save it in your home "
 "folder. Leave it blank and press enter if you changed your mind."
-msgstr "Merci d'entrer votre mot de passe une dernière fois afin de l'enregistrer dans votre dossier personnel. Vous pouvez simplement appuyer sur Entrée si vous ne souhaitez plus l'enregistrer."
+msgstr ""
+"Merci d'entrer votre mot de passe une dernière fois afin de l'enregistrer "
+"dans votre dossier personnel. Vous pouvez simplement appuyer sur Entrée si "
+"vous ne souhaitez plus l'enregistrer."
 
-#: carp/stash_manager.py:383
+#: carp/stash_manager.py:385
 msgid "Something went wrong while saving your password."
-msgstr "Une erreur est survenue lors de l'enregistrement de votre mot de passe."
+msgstr ""
+"Une erreur est survenue lors de l'enregistrement de votre mot de passe."
 
-#: carp/stash_manager.py:396
+#: carp/stash_manager.py:398
 #, python-brace-format
 msgid "{0} already mounted."
 msgstr "{0} est déjà monté."
 
-#: carp/stash_manager.py:408
+#: carp/stash_manager.py:410
 #, python-brace-format
 msgid "{0} should be mounted without problem (DRY RUN)"
 msgstr "{0} devrait pouvoir être monté sans problème (ESSAI À BLANC)"
 
-#: carp/stash_manager.py:423
+#: carp/stash_manager.py:428
 #, python-brace-format
 msgid "{0} mounted"
 msgstr "{0} monté"
 
-#: carp/stash_manager.py:434
+#: carp/stash_manager.py:442
 #, python-brace-format
 msgid "{0} not mounted."
 msgstr "{0} non monté"
 
-#: carp/stash_manager.py:440
+#: carp/stash_manager.py:448
 #, python-brace-format
 msgid "{0} should be unmounted without problem (DRY RUN)"
 msgstr "{0} devrait pouvoir être démonté sans problème (ESSAI À BLANC)"
 
-#: carp/stash_manager.py:448
-#, python-brace-format
-msgid "{0} unmounted"
-msgstr "{0} démonté"
-
-#: carp/stash_manager.py:452
+#: carp/stash_manager.py:456
 #, python-brace-format
 msgid "An error happened, {0} NOT unmounted"
 msgstr "Une erreur est survenue. {0} n'est PAS démonté"
 
-#: carp/stash_manager.py:461
+#: carp/stash_manager.py:460
+#, python-brace-format
+msgid "{0} unmounted"
+msgstr "{0} démonté"
+
+#: carp/stash_manager.py:475
 #, python-brace-format
 msgid "{0} should not be pulled while being mounted."
 msgstr "{0} ne peut pas être récupéré tant qu'il est monté."
 
-#: carp/stash_manager.py:464
+#: carp/stash_manager.py:478
 #, python-brace-format
 msgid "No remote configured for {0}"
 msgstr "Pas de configuration distante trouvée pour {0}"
