@@ -74,8 +74,8 @@ class StashWatcher:
         try:
             notifier.loop(daemonize=True, pid_file=pid_file,
                           stdout=log_file)
-        except CarpStopNotifierError:
 
+        except CarpStopNotifierError:
             with open(log_file, "a") as f:
                 f.write("Watch end for {}\n".format(stash_name))
 
