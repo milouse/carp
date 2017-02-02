@@ -97,6 +97,23 @@ class CarpGui:
             mi_button.connect("activate", self.open_in_term, stash_name)
             mm.append(mi_button)
 
+        last_change = 0
+        if "lastchange" in self.sm.config[stash_name]:
+            last_change = int(self.sm.config[stash_name]["lastchange"])
+
+        last_mount = 0
+        if "lastmount" in self.sm.config[stash_name]:
+            last_mount = int(self.sm.config[stash_name]["lastmount"])
+
+        if last_change > last_mount:
+            mi_button = Gtk.MenuItem.new_with_label(_("Changes!"))
+
+        else:
+            mi_button = Gtk.MenuItem.new_with_label(_("No changes"))
+            mi_button.set_sensitive(False)
+
+        mm.append(mi_button)
+
         mb = Gtk.MenuItem.new_with_label(stash_name)
         mb.set_submenu(mm)
         return mb
