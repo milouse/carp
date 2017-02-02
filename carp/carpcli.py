@@ -9,10 +9,10 @@ from xdg.BaseDirectory import xdg_config_home
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 
 import gettext
-
 CARP_L10N_PATH = "./locales"
-
-gettext.install("carp", CARP_L10N_PATH)
+# Explicit declaration to avoid flake8 fear.
+gettext.bindtextdomain("carp", CARP_L10N_PATH)
+gettext.textdomain("carp")
 _ = gettext.gettext
 
 

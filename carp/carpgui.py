@@ -14,10 +14,10 @@ gi.require_version("Notify", "0.7")  # noqa: E402
 from gi.repository import Gtk, GLib, Notify
 
 import gettext
-
 CARP_L10N_PATH = "./locales"
-
-gettext.install("carp", CARP_L10N_PATH)
+# Explicit declaration to avoid flake8 fear.
+gettext.bindtextdomain("carp", CARP_L10N_PATH)
+gettext.textdomain("carp")
 _ = gettext.gettext
 
 CARP_POSSIBLE_STATUS = {
@@ -76,12 +76,14 @@ class CarpGui:
         mm.append(mi_button)
 
         if is_unmounted:
-            mi_button = Gtk.MenuItem.new_with_label(_("Pull"))
+            mi_button = Gtk.MenuItem.new_with_label(
+                _("Pull {0}").format(stash_name))
             mi_button.connect("activate", self.encfs_action,
                               "pull", stash_name)
             mm.append(mi_button)
 
-            mi_button = Gtk.MenuItem.new_with_label(_("Push"))
+            mi_button = Gtk.MenuItem.new_with_label(
+                _("Push {0}").format(stash_name))
             mi_button.connect("activate", self.encfs_action,
                               "push", stash_name)
             mm.append(mi_button)

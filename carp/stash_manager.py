@@ -14,10 +14,10 @@ from xdg.BaseDirectory import xdg_cache_home, xdg_config_home
 from carp.stash_watcher import StashWatcher
 
 import gettext
-
 CARP_L10N_PATH = "./locales"
-
-gettext.install("carp", CARP_L10N_PATH)
+# Explicit declaration to avoid flake8 fear.
+gettext.bindtextdomain("carp", CARP_L10N_PATH)
+gettext.textdomain("carp")
 _ = gettext.gettext
 
 
