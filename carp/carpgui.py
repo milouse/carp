@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 
 import os
+import sys
 import signal
 import subprocess
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 from carp.stash_manager import StashManager, CarpNotAStashError, \
     CarpMountError, CarpNoRemoteError, CarpNotEmptyDirectoryError
+from carp.version import VERSION
 from xdg.BaseDirectory import xdg_config_home
 
 import gi
@@ -27,8 +29,6 @@ CARP_POSSIBLE_STATUS = {
     "push": _("push")
 }
 
-__VERSION__ = "0.3"
-
 
 class CarpGui:
     def __init__(self):
@@ -45,12 +45,20 @@ class CarpGui:
         self.tray.connect("popup-menu", self.display_menu)
 
     def parse_args(self):
+        carp_desc = _("EncFS GUI managing tool")
         parser = ArgumentParser(
-            description=_("EncFS GUI managing tool"),
+            description=carp_desc,
             formatter_class=RawDescriptionHelpFormatter)
+        parser.add_argument("-v", "--version", action="store_true",
+                            help="Display carp version information"
+                                 " and exit.")
         parser.add_argument("-c", "--config",
                             help=_("Customized config file."))
         args = parser.parse_args()
+
+        if args.version:
+            print("{} - v{}".format(carp_desc, VERSION))
+            sys.exit(0)
 
         self.config_file = os.path.join(xdg_config_home, ".carp", "carp.conf")
         if args.config:
@@ -249,7 +257,7 @@ StartupNotify=false
         about_dialog.set_name("Carp")
         about_dialog.set_website("https://projects.depar.is/carp")
         about_dialog.set_comments(_("EncFS GUI managing tool"))
-        about_dialog.set_version(__VERSION__)
+        about_dialog.set_version(VERSION)
         about_dialog.set_copyright(_("Carp is released under the WTFPL"))
         about_dialog.set_authors(["Étienne Deparis <etienne@depar.is>"])
         about_dialog.run()

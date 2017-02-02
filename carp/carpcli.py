@@ -5,6 +5,7 @@ import sys
 from carp.stash_manager import StashManager, CarpNotAStashError, \
     CarpMountError, CarpNoRemoteError, CarpNotEmptyDirectoryError, \
     CarpSubcommandError
+from carp.version import VERSION
 from xdg.BaseDirectory import xdg_config_home
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 
@@ -54,8 +55,9 @@ class CarpCli:
         sys.exit(error_code)
 
     def parse_args(self):
+        carp_desc = _("EncFS CLI managing tool")
         parser = ArgumentParser(
-            description=_("EncFS CLI managing tool"),
+            description=carp_desc,
             formatter_class=RawDescriptionHelpFormatter,
             epilog="""\
 Each command has its own help. To access it, do a:
@@ -63,6 +65,9 @@ Each command has its own help. To access it, do a:
 
 For exemple: %(prog)s create --help
 """)
+        parser.add_argument("-v", "--version", action="store_true",
+                            help="Display carp version information"
+                                 " and exit.")
         parser.add_argument("-c", "--config",
                             help=_("Customized config file."))
 
@@ -117,6 +122,11 @@ For exemple: %(prog)s create --help
                                   "pulling unexpected things over it.")
 
         args = parser.parse_args()
+
+        if args.version:
+            print("{} - v{}".format(carp_desc, VERSION))
+            sys.exit(0)
+
         self.command = args.command
 
         if self.command not in subparsers.choices.keys():
