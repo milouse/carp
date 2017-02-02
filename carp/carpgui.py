@@ -155,8 +155,11 @@ class CarpGui:
             return False
 
         cmd_opts = {"stash": stash_name}
-        if action == "mount" and not self.sm.stashes[stash_name]["pass_file"]:
-            cmd_opts["pass_cmd"] = "zenity --password"
+        if action == "mount":
+            cmd_opts["watch"] = True
+
+            if not self.sm.stashes[stash_name]["pass_file"]:
+                cmd_opts["pass_cmd"] = "zenity --password"
 
         try:
             success = getattr(self.sm, action)(cmd_opts)

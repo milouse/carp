@@ -11,6 +11,8 @@ from datetime import datetime
 from configparser import ConfigParser
 from xdg.BaseDirectory import xdg_cache_home, xdg_config_home
 
+from carp.stash_watcher import StashWatcher
+
 import gettext
 
 CARP_L10N_PATH = "./locales"
@@ -419,13 +421,19 @@ class StashManager:
 
         success_mount = subprocess.run(mount_cmd).returncode
 
-        if success_mount == 0:
-            print(_("{0} mounted").format(final_mount_point))
-            self.write_timestamp(stash_name, "mount")
-            return True
+        if success_mount != 0:
+            print("{0} NOT mounted".format(final_mount_point))
+            return False
 
-        print("{0} NOT mounted".format(final_mount_point))
-        return False
+        print(_("{0} mounted").format(final_mount_point))
+        self.write_timestamp(stash_name, "mount")
+
+        if opts["watch"]:
+            StashWatcher(stash_name,
+                         self.stashes[stash_name],
+                         self.config_file)
+
+        return True
 
     def unmount(self, opts):
         stash_name = opts["stash"]
@@ -444,14 +452,20 @@ class StashManager:
         cmd = subprocess.run(
             ["fusermount", "-u", final_mount_point])
 
-        if cmd.returncode == 0:
-            print(_("{0} unmounted").format(final_mount_point))
-            self.write_timestamp(stash_name, "unmount")
-            return True
+        if cmd.returncode != 0:
+            print(_("An error happened, {0} NOT unmounted")
+                  .format(final_mount_point))
+            return False
 
-        print(_("An error happened, {0} NOT unmounted")
-              .format(final_mount_point))
-        return False
+        print(_("{0} unmounted").format(final_mount_point))
+        self.write_timestamp(stash_name, "unmount")
+
+        stop_file = os.path.join(xdg_config_home, ".carp",
+                                 stash_name, "watch_running")
+        if os.path.exists(stop_file):
+            os.unlink(stop_file)
+
+        return True
 
     def rsync(self, opts, direction="pull"):
         stash_name = opts["stash"]

@@ -5,7 +5,6 @@ import sys
 from carp.stash_manager import StashManager, CarpNotAStashError, \
     CarpMountError, CarpNoRemoteError, CarpNotEmptyDirectoryError, \
     CarpSubcommandError
-from carp.stash_watcher import StashWatcher
 from xdg.BaseDirectory import xdg_config_home
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 
@@ -175,19 +174,6 @@ For exemple: %(prog)s create --help
             else:
                 print(str(e))
                 return False
-
-        self.after_run()
-
-    def after_run(self):
-        if self.command == "mount" and self.options["watch"]:
-            StashWatcher(self.options["stash"], self.options["config"])
-
-        elif self.command == "unmount":
-            stop_file = os.path.join(xdg_config_home, ".carp",
-                                     self.options["stash"],
-                                     "watch_running")
-            if os.path.exists(stop_file):
-                os.unlink(stop_file)
 
 
 if __name__ == "__main__":
