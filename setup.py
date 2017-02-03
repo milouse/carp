@@ -18,7 +18,7 @@ with open(path.join(path.abspath(path.dirname(__file__)),
 version_match = re.search(r"VERSION = \"(\d(?:\.\d)*)\"", version_content)
 version_number = "dev"
 if version_match:
-    version_number = version_number[1]
+    version_number = version_match[1]
 
 setup(name="carp",
       version=version_number,
