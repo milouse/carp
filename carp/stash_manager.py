@@ -20,7 +20,7 @@ gettext.textdomain("carp")
 _ = gettext.gettext
 
 CARP_STASH_POSSIBLE_STATUS = {
-    "-": "-",  # if it's work it's not stupid
+    "-": "-",  # if it works it ain't stupid
     "mounted": _("mounted"),
     "changed": _("changed"),
     "watched": _("watched")
