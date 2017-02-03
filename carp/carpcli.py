@@ -4,7 +4,7 @@ import os
 import sys
 from carp.stash_manager import StashManager, CarpNotAStashError, \
     CarpMountError, CarpNoRemoteError, CarpNotEmptyDirectoryError, \
-    CarpSubcommandError
+    CarpSubcommandError, CarpMustBePushedError
 from carp.version import VERSION
 from xdg.BaseDirectory import xdg_config_home
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
@@ -178,7 +178,8 @@ For exemple: %(prog)s create --help
 
         except (NotADirectoryError, CarpNotAStashError,
                 CarpMountError, CarpNoRemoteError,
-                CarpNotEmptyDirectoryError, CarpSubcommandError) as e:
+                CarpNotEmptyDirectoryError, CarpSubcommandError,
+                CarpMustBePushedError) as e:
             if can_exit:
                 self.die(str(e))
             else:

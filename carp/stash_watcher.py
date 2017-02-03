@@ -3,11 +3,17 @@
 import os
 import sys
 from datetime import datetime
-from configparser import ConfigParser
-from pyinotify import WatchManager, Notifier, ProcessEvent, \
-    IN_ATTRIB, IN_CLOSE_WRITE, IN_CREATE, IN_DELETE, \
-    IN_MODIFY, IN_IGNORED
-from xdg.BaseDirectory import xdg_cache_home, xdg_config_home
+from pyinotify import WatchManager, ThreadedNotifier, ProcessEvent, \
+     NotifierError, IN_ATTRIB, IN_CLOSE_WRITE, IN_CREATE, IN_DELETE, \
+     IN_MODIFY
+from xdg.BaseDirectory import xdg_config_home
+
+import gettext
+CARP_L10N_PATH = "./locales"
+# Explicit declaration to avoid flake8 fear.
+gettext.bindtextdomain("carp", CARP_L10N_PATH)
+gettext.textdomain("carp")
+_ = gettext.gettext
 
 
 class CarpStopNotifierError(Exception):
@@ -15,69 +21,85 @@ class CarpStopNotifierError(Exception):
 
 
 class CarpEventHandler(ProcessEvent):
-    def __init__(self, config_file, stash_name):
+    def __init__(self, stash_name):
         self.stash_name = stash_name
-        self.config_file = config_file
-        self.should_stop = False
-
-    def process_IN_IGNORED(self, event):
-        print("{}: {}".format(event.maskname, event.pathname))
-        stop_file = os.path.join(xdg_config_home, ".carp",
-                                 self.stash_name, "watch_running")
-        if event.pathname == stop_file:
-            raise CarpStopNotifierError()
+        self.change_file = os.path.join(
+            xdg_config_home, ".carp", stash_name, "last-change")
 
     def process_default(self, event):
-        config = ConfigParser()
-        config.read(self.config_file)
-
-        config[self.stash_name]["lastchange"] = str(round(
-            datetime.now().timestamp()))
-
-        with open(self.config_file, "w") as f:
-            config.write(f)
-
-        print("{}: {}".format(event.maskname, event.pathname))
+        # print("{}: {}".format(event.maskname, event.pathname))
+        with open(self.change_file, "w") as f:
+            f.write(str(round(datetime.now().timestamp())))
 
 
 class StashWatcher:
-    def __init__(self, stash_name, stash_info, config_file=None):
-        if not config_file:
-            config_file = os.path.join(xdg_config_home,
-                                       ".carp", "carp.conf")
-        else:
-            config_file = os.path.expanduser(config_file)
+    def __init__(self):
+        self.watchers = {}
+
+    def start(self, stash_name, stash_root):
+        if stash_name in self.watchers:
+            print(_("Trying to start an already started "
+                    "watch for {0}").format(stash_name),
+                  file=sys.stderr)
+            return False
 
         wm = WatchManager()
-        notifier = Notifier(
-            wm, CarpEventHandler(config_file, stash_name))
+        notifier = ThreadedNotifier(wm, CarpEventHandler(stash_name))
+
+        new_watch = {
+            "wm": wm,
+            "wdd": {},
+            "notifier": notifier
+        }
+
+        try:
+            new_watch["notifier"].start()
+
+        except NotifierError:
+            print(_("Error starting watch for {0}").format(stash_name),
+                  file=sys.stderr)
 
         watch_mask = (IN_ATTRIB | IN_CLOSE_WRITE | IN_CREATE |
                       IN_DELETE | IN_MODIFY)
-        wm.add_watch(stash_info["encfs_root"],
-                     watch_mask,
-                     rec=True)
+        new_watch["wdd"] = new_watch["wm"].add_watch(
+            stash_root, watch_mask, rec=True)
 
-        stop_file = os.path.join(xdg_config_home, ".carp",
-                                 stash_name, "watch_running")
-        open(stop_file, "w").close()
-        wm.add_watch(stop_file, IN_IGNORED)
+        self.watchers[stash_name] = new_watch
 
-        pid_file = os.path.join(xdg_cache_home,
-                                "carp_watcher.{}.pid"
-                                .format(stash_name))
-        log_file = os.path.join(xdg_config_home, ".carp",
-                                stash_name, "carp_watcher.log")
-        with open(log_file, "w") as f:
-            f.write("Watch start for {}\n".format(stash_name))
+        watch_file = os.path.join(
+            xdg_config_home, ".carp", stash_name, "watched")
+        open(watch_file, "w").close()
 
-        try:
-            notifier.loop(daemonize=True, pid_file=pid_file,
-                          stdout=log_file)
+    def stop(self, stash_name):
+        if stash_name not in self.watchers:
+            print(_("Trying to stop an already stopped "
+                    "watch for {0}").format(stash_name),
+                  file=sys.stderr)
+            return False
 
-        except CarpStopNotifierError:
-            with open(log_file, "a") as f:
-                f.write("Watch end for {}\n".format(stash_name))
+        wdd = self.watchers[stash_name]["wdd"]
+        self.watchers[stash_name]["wm"].rm_watch(wdd.values(), rec=True)
+        self.watchers[stash_name]["notifier"].stop()
+        self.watchers.pop(stash_name)
+
+        watch_file = os.path.join(
+            xdg_config_home, ".carp", stash_name, "watched")
+        if os.path.exists(watch_file):
+            os.unlink(watch_file)
+
+    def is_watched(self, stash_name):
+        if stash_name in self.watchers:
+            return True
+
+        watch_file = os.path.join(
+            xdg_config_home, ".carp", stash_name, "watched")
+        if os.path.exists(watch_file):
+            print(_("{0} seems to be watched by another process.")
+                  .format(stash_name),
+                  file=sys.stderr)
+            return True
+
+        return False
 
 
 if __name__ == "__main__":

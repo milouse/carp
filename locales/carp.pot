@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Carp 0.4\n"
 "Report-Msgid-Bugs-To: bugs@depar.is\n"
-"POT-Creation-Date: 2017-02-02 10:19+0100\n"
+"POT-Creation-Date: 2017-02-03 00:56+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,11 +17,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: carp/carpcli.py:28
+#: carp/carpcli.py:29
 msgid "WTF command not recognized!"
 msgstr ""
 
-#: carp/carpcli.py:45
+#: carp/carpcli.py:46
 #, python-brace-format
 msgid "Working on {0}"
 msgstr ""
@@ -30,173 +30,250 @@ msgstr ""
 msgid "EncFS CLI managing tool"
 msgstr ""
 
-#: carp/carpcli.py:67 carp/carpgui.py:52
+#: carp/carpcli.py:72 carp/carpgui.py:57
 msgid "Customized config file."
 msgstr ""
 
-#: carp/carpgui.py:24
+#: carp/carpgui.py:27
 msgid "mount"
 msgstr ""
 
-#: carp/carpgui.py:25
+#: carp/carpgui.py:28
 msgid "unmount"
 msgstr ""
 
-#: carp/carpgui.py:26
+#: carp/carpgui.py:29
 msgid "pull"
 msgstr ""
 
-#: carp/carpgui.py:27
+#: carp/carpgui.py:30
 msgid "push"
 msgstr ""
 
-#: carp/carpgui.py:49 carp/carpgui.py:234
+#: carp/carpgui.py:49 carp/carpgui.py:255
 msgid "EncFS GUI managing tool"
 msgstr ""
 
-#: carp/carpgui.py:63
+#: carp/carpgui.py:72
 #, python-brace-format
 msgid "Use {0} of space"
 msgstr ""
 
-#: carp/carpgui.py:67
+#: carp/carpgui.py:80
+msgid "There are changes to push"
+msgstr ""
+
+#: carp/carpgui.py:82
+msgid "Nothing to report"
+msgstr ""
+
+#: carp/carpgui.py:87
 #, python-brace-format
 msgid "Unmount {0}"
 msgstr ""
 
-#: carp/carpgui.py:70
+#: carp/carpgui.py:90
 #, python-brace-format
 msgid "Mount {0}"
 msgstr ""
 
-#: carp/carpgui.py:80
+#: carp/carpgui.py:100
 #, python-brace-format
 msgid "Pull {0}"
 msgstr ""
 
-#: carp/carpgui.py:86
+#: carp/carpgui.py:106
 #, python-brace-format
 msgid "Push {0}"
 msgstr ""
 
-#: carp/carpgui.py:91
+#: carp/carpgui.py:111
 msgid "Open"
 msgstr ""
 
-#: carp/carpgui.py:96
+#: carp/carpgui.py:116
 msgid "Open in term"
 msgstr ""
 
-#: carp/carpgui.py:114
+#: carp/carpgui.py:134
 msgid "An error occured while retrieving your stashes' list"
 msgstr ""
 
-#: carp/carpgui.py:131
+#: carp/carpgui.py:151
 msgid "Automatically start"
 msgstr ""
 
-#: carp/carpgui.py:137
+#: carp/carpgui.py:157
 msgid "Report a bug"
 msgstr ""
 
-#: carp/carpgui.py:173
+#: carp/carpgui.py:194
 #, python-brace-format
 msgid "{0} correctly {1}ed"
 msgstr ""
 
-#: carp/carpgui.py:177
+#: carp/carpgui.py:198
 #, python-brace-format
 msgid "An error occured while {1}ing {0}"
 msgstr ""
 
-#: carp/carpgui.py:236
+#: carp/carpgui.py:257
 msgid "Carp is released under the WTFPL"
 msgstr ""
 
-#: carp/stash_manager.py:81 carp/stash_manager.py:102
+#: carp/stash_manager.py:24
+msgid "mounted"
+msgstr ""
+
+#: carp/stash_manager.py:25
+msgid "changed"
+msgstr ""
+
+#: carp/stash_manager.py:26
+msgid "watched"
+msgstr ""
+
+#: carp/stash_manager.py:82
+#, python-brace-format
+msgid "{0} watch seems to have been orphaned by its process. Killing it now."
+msgstr ""
+
+#: carp/stash_manager.py:100 carp/stash_manager.py:121
 #, python-brace-format
 msgid "{0} does not exists."
 msgstr ""
 
-#: carp/stash_manager.py:114
+#: carp/stash_manager.py:133
 #, python-brace-format
 msgid "{0} already exists in your file system but is NOT an empty folder."
 msgstr ""
 
-#: carp/stash_manager.py:117
+#: carp/stash_manager.py:136
 #, python-brace-format
 msgid "{0} does not exists, thus we create an empty one"
 msgstr ""
 
-#: carp/stash_manager.py:126
+#: carp/stash_manager.py:145
 #, python-brace-format
 msgid "{0} is not an empty dirctory. It cannot be used as a new EncFS stash."
 msgstr ""
 
-#: carp/stash_manager.py:165
+#: carp/stash_manager.py:178
 #, python-brace-format
 msgid "{0} is not a known stash."
 msgstr ""
 
-#: carp/stash_manager.py:349
+#: carp/stash_manager.py:262 carp/stash_manager.py:305
+#: carp/stash_manager.py:310
+msgid "NAME"
+msgstr ""
+
+#: carp/stash_manager.py:263 carp/stash_manager.py:311
+msgid "PATH"
+msgstr ""
+
+#: carp/stash_manager.py:264 carp/stash_manager.py:305
+#: carp/stash_manager.py:311
+msgid "REMOTE"
+msgstr ""
+
+#: carp/stash_manager.py:265 carp/stash_manager.py:305
+#: carp/stash_manager.py:310
+msgid "ROOT"
+msgstr ""
+
+#: carp/stash_manager.py:268 carp/stash_manager.py:310
+msgid "STATE"
+msgstr ""
+
+#: carp/stash_manager.py:306 carp/stash_manager.py:311
+msgid "SIZE"
+msgstr ""
+
+#: carp/stash_manager.py:381
 msgid "Something went wrong with EncFS"
 msgstr ""
 
-#: carp/stash_manager.py:354
+#: carp/stash_manager.py:386
 msgid "EncFS stash successfully created. Time to save new configuration."
 msgstr ""
 
-#: carp/stash_manager.py:369
+#: carp/stash_manager.py:401
 msgid ""
 "Please enter your password a last time in order to save it in your home "
 "folder. Leave it blank and press enter if you changed your mind."
 msgstr ""
 
-#: carp/stash_manager.py:385
+#: carp/stash_manager.py:417
 msgid "Something went wrong while saving your password."
 msgstr ""
 
-#: carp/stash_manager.py:398
+#: carp/stash_manager.py:430
 #, python-brace-format
 msgid "{0} already mounted."
 msgstr ""
 
-#: carp/stash_manager.py:410
+#: carp/stash_manager.py:442
 #, python-brace-format
 msgid "{0} should be mounted without problem (DRY RUN)"
 msgstr ""
 
-#: carp/stash_manager.py:428
+#: carp/stash_manager.py:460
 #, python-brace-format
 msgid "{0} mounted"
 msgstr ""
 
-#: carp/stash_manager.py:442
+#: carp/stash_manager.py:472
 #, python-brace-format
 msgid "{0} not mounted."
 msgstr ""
 
-#: carp/stash_manager.py:448
+#: carp/stash_manager.py:478
 #, python-brace-format
 msgid "{0} should be unmounted without problem (DRY RUN)"
 msgstr ""
 
-#: carp/stash_manager.py:456
+#: carp/stash_manager.py:486
 #, python-brace-format
 msgid "An error happened, {0} NOT unmounted"
 msgstr ""
 
-#: carp/stash_manager.py:460
+#: carp/stash_manager.py:490
 #, python-brace-format
 msgid "{0} unmounted"
 msgstr ""
 
-#: carp/stash_manager.py:475
+#: carp/stash_manager.py:501
 #, python-brace-format
 msgid "{0} should not be pulled while being mounted."
 msgstr ""
 
-#: carp/stash_manager.py:478
+#: carp/stash_manager.py:504
 #, python-brace-format
 msgid "No remote configured for {0}"
+msgstr ""
+
+#: carp/stash_manager.py:512
+#, python-brace-format
+msgid "{0} have changes, which need to be pushed first."
+msgstr ""
+
+#: carp/stash_watcher.py:41
+#, python-brace-format
+msgid "Trying to start an already started watch for {0}"
+msgstr ""
+
+#: carp/stash_watcher.py:59
+#, python-brace-format
+msgid "Error starting watch for {0}"
+msgstr ""
+
+#: carp/stash_watcher.py:75
+#, python-brace-format
+msgid "Trying to stop an already stopped watch for {0}"
+msgstr ""
+
+#: carp/stash_watcher.py:97
+#, python-brace-format
+msgid "{0} seems to be watched by another process."
 msgstr ""

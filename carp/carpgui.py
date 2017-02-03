@@ -6,7 +6,8 @@ import signal
 import subprocess
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 from carp.stash_manager import StashManager, CarpNotAStashError, \
-    CarpMountError, CarpNoRemoteError, CarpNotEmptyDirectoryError
+    CarpMountError, CarpNoRemoteError, CarpNotEmptyDirectoryError, \
+    CarpMustBePushedError
 from carp.version import VERSION
 from xdg.BaseDirectory import xdg_config_home
 
@@ -72,6 +73,17 @@ class CarpGui:
         current_state_info.set_sensitive(False)
         mm.append(current_state_info)
 
+        change_file = os.path.join(xdg_config_home, ".carp",
+                                   stash_name, "last-change")
+        if os.path.exists(change_file):
+            mi_button = Gtk.MenuItem.new_with_label(
+                _("There are changes to push"))
+        else:
+            mi_button = Gtk.MenuItem.new_with_label(_("Nothing to report"))
+            mi_button.set_sensitive(False)
+
+        mm.append(mi_button)
+
         mount_label = _("Unmount {0}").format(stash_name)
         mount_action = "unmount"
         if is_unmounted:
@@ -104,23 +116,6 @@ class CarpGui:
             mi_button = Gtk.MenuItem.new_with_label(_("Open in term"))
             mi_button.connect("activate", self.open_in_term, stash_name)
             mm.append(mi_button)
-
-        last_change = 0
-        if "lastchange" in self.sm.config[stash_name]:
-            last_change = int(self.sm.config[stash_name]["lastchange"])
-
-        last_mount = 0
-        if "lastmount" in self.sm.config[stash_name]:
-            last_mount = int(self.sm.config[stash_name]["lastmount"])
-
-        if last_change > last_mount:
-            mi_button = Gtk.MenuItem.new_with_label(_("Changes!"))
-
-        else:
-            mi_button = Gtk.MenuItem.new_with_label(_("No changes"))
-            mi_button.set_sensitive(False)
-
-        mm.append(mi_button)
 
         mb = Gtk.MenuItem.new_with_label(stash_name)
         mb.set_submenu(mm)
@@ -191,7 +186,8 @@ class CarpGui:
         try:
             success = getattr(self.sm, action)(cmd_opts)
         except (CarpMountError, CarpNotEmptyDirectoryError,
-                CarpNotAStashError, CarpNoRemoteError):
+                CarpNotAStashError, CarpNoRemoteError,
+                CarpMustBePushedError):
             success = False
 
         if success:

@@ -7,9 +7,8 @@ import time
 import shutil
 import subprocess
 from getpass import getpass
-from datetime import datetime
 from configparser import ConfigParser
-from xdg.BaseDirectory import xdg_cache_home, xdg_config_home
+from xdg.BaseDirectory import xdg_config_home
 
 from carp.stash_watcher import StashWatcher
 
@@ -19,6 +18,13 @@ CARP_L10N_PATH = "./locales"
 gettext.bindtextdomain("carp", CARP_L10N_PATH)
 gettext.textdomain("carp")
 _ = gettext.gettext
+
+CARP_STASH_POSSIBLE_STATUS = {
+    "-": "-",  # if it's work it's not stupid
+    "mounted": _("mounted"),
+    "changed": _("changed"),
+    "watched": _("watched")
+}
 
 
 class CarpNotAStashError(Exception):
@@ -41,8 +47,14 @@ class CarpSubcommandError(Exception):
     pass
 
 
+class CarpMustBePushedError(Exception):
+    pass
+
+
 class StashManager:
     def __init__(self, config_file):
+        self.stash_watcher = StashWatcher()
+
         self.config_file = config_file
         self.config = ConfigParser()
         self.config.read(self.config_file)
@@ -64,6 +76,13 @@ class StashManager:
             loc_emp = self.init_stash(sec)
             if loc_emp:
                 self.stashes[sec] = loc_emp
+
+        for st in self.unmounted_stashes():
+            if self.stash_watcher.is_watched(st):
+                print(_("{0} watch seems to have been orphaned by "
+                        "its process. Killing it now.").format(st),
+                      file=sys.stderr)
+                self.stash_watcher.stop(st)
 
     def init_stash(self, stash_name):
         if stash_name == "general":
@@ -154,12 +173,6 @@ class StashManager:
         with open(self.config_file, "w") as f:
             self.config.write(f)
 
-    def write_timestamp(self, stash_name, action):
-        ckey = "last{}".format(action)
-        self.config[stash_name][ckey] = str(round(
-            datetime.now().timestamp()))
-        self.write_config()
-
     def valid_stash(self, stash_name):
         if stash_name not in self.stashes.keys():
             raise CarpNotAStashError(_("{0} is not a known stash.")
@@ -168,6 +181,7 @@ class StashManager:
     def mounted_stashes(self):
         all_stashes = self.stashes.keys()
         _mounted_stashes = []
+
         with open("/proc/mounts", "r") as proc:
             for line in proc:
                 regex = r"^encfs {}/(.+) fuse.encfs.+$" \
@@ -192,18 +206,21 @@ class StashManager:
                              check=True, stdout=subprocess.PIPE)
         return re.sub(encfs_mp, "", cmd.stdout.decode()).strip()
 
-    def format_stash(self, stash_name, state="mounted", no_state=False):
+    def __format_stash(self, stash_name, state="mounted", no_state=False):
         pdata = [stash_name]
         lin_home = os.path.expanduser("~")
 
         if not no_state:
-            if state == "mounted":
-                pid_file = os.path.join(
-                    xdg_cache_home,
-                    "carp_watcher.{}.pid".format(stash_name))
-                if os.path.exists(pid_file):
-                    state = "watched"
-            pdata.append(state)
+            if state == "mounted" \
+              and self.stash_watcher.is_watched(stash_name):
+                state = "watched"
+
+            change_file = os.path.join(xdg_config_home, ".carp",
+                                       stash_name, "last-change")
+            if os.path.exists(change_file):
+                state = "changed"
+
+            pdata.append(CARP_STASH_POSSIBLE_STATUS[state])
 
         encfs_mp = self.stashes[stash_name]["encfs_root"]
         if os.path.exists(encfs_mp):
@@ -229,6 +246,100 @@ class StashManager:
 
         return tuple(pdata)
 
+    def __list_raw(self, state, mounted_list, unmounted_list):
+        if state == "mounted":
+            print("\n".join(mounted_list))
+
+        elif state == "unmounted":
+            print("\n".join(unmounted_list))
+
+        else:
+            print("\n".join(mounted_list + unmounted_list))
+
+        return True
+
+    def __list_fancy(self, state, mounted_list, unmounted_list):
+        name_len = len(_("NAME"))
+        mounted_len = len(_("PATH"))
+        remote_len = len(_("REMOTE"))
+        root_len = len(_("ROOT"))
+        lin_home = os.path.expanduser("~")
+
+        state_len = len(_("STATE"))
+        for i18n_state in CARP_STASH_POSSIBLE_STATUS.values():
+            if len(i18n_state) > state_len:
+                state_len = len(i18n_state)
+
+        for st in self.stashes.keys():
+            if (state == "mounted" and
+               st not in mounted_list):
+                continue
+            if (state == "unmounted" and
+               st not in unmounted_list):
+                continue
+
+            if len(st) > name_len:
+                name_len = len(st)
+
+            final_mp = os.path.join(self.mount_point(), st)
+            if os.path.exists(final_mp) and st in mounted_list:
+                final_mp = re.sub(lin_home, "~", final_mp)
+                if len(final_mp) > mounted_len:
+                    mounted_len = len(final_mp)
+
+            encfs_mp = self.stashes[st]["encfs_root"]
+            if os.path.exists(encfs_mp):
+                encfs_mp = re.sub(lin_home, "~", encfs_mp)
+                if len(encfs_mp) > root_len:
+                    root_len = len(encfs_mp)
+
+            remote_mp = self.stashes[st]["remote_path"]
+            if remote_mp and len(remote_mp) > remote_len:
+                    remote_len = len(remote_mp)
+
+        partial_line = "{:<{nfill}} {:<{rfill}} {:<{refill}} {:<7}"
+        complete_line = "{:<{nfill}} {:<{sfill}} {:<{rfill}} " \
+                        "{:<{mfill}} {:<{refill}} {:<7}"
+
+        if state == "unmounted":
+            print(partial_line.format(_("NAME"), _("ROOT"), _("REMOTE"),
+                                      _("SIZE"), nfill=name_len,
+                                      rfill=root_len, refill=remote_len))
+
+        else:
+            print(complete_line.format(_("NAME"), _("STATE"), _("ROOT"),
+                                       _("PATH"), _("REMOTE"), _("SIZE"),
+                                       nfill=name_len,
+                                       sfill=state_len,
+                                       rfill=root_len,
+                                       mfill=mounted_len,
+                                       refill=remote_len))
+
+        if state == "mounted" or state == "all":
+            for st in mounted_list:
+                print(complete_line.format(*self.__format_stash(st),
+                                           nfill=name_len,
+                                           sfill=state_len,
+                                           rfill=root_len,
+                                           mfill=mounted_len,
+                                           refill=remote_len))
+        elif state == "unmounted":
+            for st in unmounted_list:
+                print(partial_line.format(*self.__format_stash(st, "-", True),
+                                          nfill=name_len,
+                                          rfill=root_len,
+                                          refill=remote_len))
+
+        if state == "all":
+            for st in unmounted_list:
+                print(complete_line.format(*self.__format_stash(st, "-"),
+                                           nfill=name_len,
+                                           sfill=state_len,
+                                           rfill=root_len,
+                                           mfill=mounted_len,
+                                           refill=remote_len))
+        return True
+
     def list(self, opts):
         state = "mounted"
         if ("state" in opts and
@@ -250,88 +361,9 @@ class StashManager:
             return True
 
         if "raw" in opts and opts["raw"]:
-            if state == "mounted":
-                print("\n".join(loc_mounted))
+            return self.__list_raw(state, loc_mounted, loc_unmounted)
 
-            elif state == "unmounted":
-                print("\n".join(loc_unmounted))
-
-            else:
-                print("\n".join(loc_mounted + loc_unmounted))
-
-            return True
-
-        name_len = 4
-        mounted_len = 4
-        remote_len = 6
-        root_len = 4
-        lin_home = os.path.expanduser("~")
-        for st in self.stashes.keys():
-            if (state == "mounted" and
-               st not in loc_mounted):
-                continue
-            if (state == "unmounted" and
-               st not in loc_unmounted):
-                continue
-
-            if len(st) > name_len:
-                name_len = len(st)
-
-            final_mp = os.path.join(self.mount_point(), st)
-            if os.path.exists(final_mp) and st in loc_mounted:
-                final_mp = re.sub(lin_home, "~", final_mp)
-                if len(final_mp) > mounted_len:
-                    mounted_len = len(final_mp)
-
-            encfs_mp = self.stashes[st]["encfs_root"]
-            if os.path.exists(encfs_mp):
-                encfs_mp = re.sub(lin_home, "~", encfs_mp)
-                if len(encfs_mp) > root_len:
-                    root_len = len(encfs_mp)
-
-            remote_mp = self.stashes[st]["remote_path"]
-            if remote_mp and len(remote_mp) > remote_len:
-                    remote_len = len(remote_mp)
-
-        partial_line = "{:<{nfill}} {:<{rfill}} {:<{refill}} {:<7}"
-        complete_line = "{:<{nfill}} {:<7} {:<{rfill}} {:<{mfill}} " \
-                        "{:<{refill}} {:<7}"
-
-        if state == "unmounted":
-            print(partial_line.format("NAME", "ROOT", "REMOTE", "SIZE",
-                                      nfill=name_len, rfill=root_len,
-                                      refill=remote_len))
-
-        else:
-            print(complete_line.format("NAME", "STATE", "ROOT", "PATH",
-                                       "REMOTE", "SIZE",
-                                       nfill=name_len,
-                                       rfill=root_len,
-                                       mfill=mounted_len,
-                                       refill=remote_len))
-
-        if state == "mounted" or state == "all":
-            for st in loc_mounted:
-                print(complete_line.format(*self.format_stash(st),
-                                           nfill=name_len,
-                                           rfill=root_len,
-                                           mfill=mounted_len,
-                                           refill=remote_len))
-        elif state == "unmounted":
-            for st in loc_unmounted:
-                print(partial_line.format(*self.format_stash(st, "-", True),
-                                          nfill=name_len,
-                                          rfill=root_len,
-                                          refill=remote_len))
-
-        if state == "all":
-            for st in loc_unmounted:
-                print(complete_line.format(*self.format_stash(st, "-"),
-                                           nfill=name_len,
-                                           rfill=root_len,
-                                           mfill=mounted_len,
-                                           refill=remote_len))
-        return True
+        return self.__list_fancy(state, loc_mounted, loc_unmounted)
 
     def create(self, opts):
         final_encfs_root = self.check_dir(
@@ -426,12 +458,10 @@ class StashManager:
             return False
 
         print(_("{0} mounted").format(final_mount_point))
-        self.write_timestamp(stash_name, "mount")
 
         if opts["watch"]:
-            StashWatcher(stash_name,
-                         self.stashes[stash_name],
-                         self.config_file)
+            self.stash_watcher.start(
+                stash_name, self.stashes[stash_name]["encfs_root"])
 
         return True
 
@@ -458,12 +488,8 @@ class StashManager:
             return False
 
         print(_("{0} unmounted").format(final_mount_point))
-        self.write_timestamp(stash_name, "unmount")
 
-        stop_file = os.path.join(xdg_config_home, ".carp",
-                                 stash_name, "watch_running")
-        if os.path.exists(stop_file):
-            os.unlink(stop_file)
+        self.stash_watcher.stop(stash_name)
 
         return True
 
@@ -477,6 +503,16 @@ class StashManager:
         if not self.stashes[stash_name]["remote_path"]:
             raise CarpNoRemoteError(_("No remote configured for {0}")
                                     .format(stash_name))
+
+        change_file = os.path.join(xdg_config_home, ".carp",
+                                   stash_name, "last-change")
+        if os.path.exists(change_file):
+            if direction == "pull":
+                raise CarpMustBePushedError(
+                    _("{0} have changes, which need to "
+                      "be pushed first.").format(stash_name))
+            else:
+                os.unlink(change_file)
 
         av_opt = "-av"
         if "test" in opts and opts["test"]:
@@ -502,11 +538,9 @@ class StashManager:
         print(" ".join(rsync_cmd))
 
         cmd = subprocess.run(rsync_cmd)
-        if cmd.returncode == 0:
-            if "test" not in opts or not opts["test"]:
-                self.write_timestamp(stash_name, direction)
-            return True
-        return False
+        if cmd.returncode != 0:
+            return False
+        return True
 
     def pull(self, opts):
         return self.rsync(opts)
