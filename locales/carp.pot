@@ -129,7 +129,7 @@ msgstr ""
 
 #: carp/stash_manager.py:123
 #, python-brace-format
-msgid "{0} does not exists, thus we create an empty one"
+msgid "WARNING: {0} does not exists, thus we create an empty one"
 msgstr ""
 
 #: carp/stash_manager.py:133
@@ -214,7 +214,7 @@ msgstr ""
 
 #: carp/stash_manager.py:523
 #, python-brace-format
-msgid "An error happened, {0} NOT unmounted"
+msgid "ERROR: Something strange happened with fusermount. {0} NOT unmounted"
 msgstr ""
 
 #: carp/stash_manager.py:529

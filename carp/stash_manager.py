@@ -120,7 +120,8 @@ class StashManager:
                 _("{0} already exists in your file system but is "
                   "NOT an empty folder.").format(path))
         elif not os.path.exists(path):
-            print(_("{0} does not exists, thus we create an empty one")
+            print(_("WARNING: {0} does not exists, "
+                    "thus we create an empty one")
                   .format(path), file=sys.stderr)
             os.makedirs(path)
 
@@ -414,7 +415,6 @@ class StashManager:
         self.check_dir_is_empty(final_mount_point)
         final_encfs_root = self.stashes[stash_name]["encfs_root"]
 
-        success_mount = 1
         os.environ["ENCFS6_CONFIG"] = loc_stash["config_file"]
         if "test" in opts and opts["test"]:
             print(_("{0} should be mounted without problem (DRY RUN)")
@@ -457,7 +457,8 @@ class StashManager:
             ["fusermount", "-u", final_mount_point])
 
         if cmd.returncode != 0:
-            print(_("An error happened, {0} NOT unmounted")
+            print(_("ERROR: Something strange happened with fusermount."
+                    " {0} NOT unmounted")
                   .format(final_mount_point))
             return False
 

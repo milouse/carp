@@ -132,8 +132,8 @@ msgstr "{0} existe déjà sur votre système de fichiers mais n'est PAS vide."
 
 #: carp/stash_manager.py:123
 #, python-brace-format
-msgid "{0} does not exists, thus we create an empty one"
-msgstr "{0} n'existe pas, nous allons donc le créer"
+msgid "WARNING: {0} does not exists, thus we create an empty one"
+msgstr "ATTENTION : {0} n'existe pas, nous allons donc le créer"
 
 #: carp/stash_manager.py:133
 #, python-brace-format
@@ -223,10 +223,15 @@ msgstr "{0} non monté"
 msgid "{0} should be unmounted without problem (DRY RUN)"
 msgstr "{0} devrait pouvoir être démonté sans problème (ESSAI À BLANC)"
 
-#: carp/stash_manager.py:461
+#: carp/stash_manager.py:523
 #, python-brace-format
-msgid "An error happened, {0} NOT unmounted"
-msgstr "Une erreur est survenue. {0} n'est PAS démonté"
+msgid "ERROR: Something strange happened with fusermount. {0} NOT unmounted"
+msgstr ""
+"ERREUR : Quelque chose d'inattendu s'est produit avec fusermount. {0} n'est "
+"PAS démonté"
+
+#: carp/stash_manager.py:529
+#, python-brace-format
 
 #: carp/stash_manager.py:533
 #, python-brace-format
