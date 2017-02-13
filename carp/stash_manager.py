@@ -402,12 +402,66 @@ class StashManager:
 
         return True
 
+    def ssh_command(self, stash_name):
+        if stash_name not in self.stashes:
+            return None
+        if not self.stashes[stash_name]["remote_path"]:
+            return None
+
+        ssh_parts = self.stashes[stash_name]["remote_path"].split(":")
+        if len(ssh_parts) != 2:
+            return None
+
+        return ["ssh", ssh_parts[0], "ls", os.path.join(ssh_parts[1], "lock")]
+
+    def is_locked(self, stash_name):
+        ssh_cmd = self.ssh_command(stash_name)
+        if not ssh_cmd:
+            return False
+
+        cmd = subprocess.run(
+            ssh_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        if cmd.returncode != 0:
+            return False
+
+        return True
+
+    def create_lock(self, stash_name):
+        ssh_cmd = self.ssh_command(stash_name)
+        if not ssh_cmd:
+            return False
+
+        ssh_cmd[2] = "touch"
+        subprocess.run(ssh_cmd)
+
+        return self.is_locked(stash_name)
+
+    def remove_lock(self, stash_name):
+        ssh_cmd = self.ssh_command(stash_name)
+        if not ssh_cmd:
+            return False
+
+        ssh_cmd[2] = "rm"
+        subprocess.run(ssh_cmd, stderr=subprocess.DEVNULL)
+
+        return not self.is_locked(stash_name)
+
     def mount(self, opts):
+        test_run = "test" in opts and opts["test"]
         stash_name = opts["stash"]
         self.valid_stash(stash_name)
         if stash_name in self.mounted_stashes():
             raise CarpMountError(_("{0} already mounted."
                                  .format(stash_name)))
+
+        if self.is_locked(stash_name):
+            err_mess = _("{0} cannot be mounted as it is locked by "
+                         "another carp instance")
+            if test_run:
+                err_mess += " " + _("(DRY RUN)")
+
+            print(err_mess.format(stash_name))
+            return False
 
         loc_stash = self.stashes[stash_name]
         final_mount_point = self.check_dir(
@@ -416,7 +470,7 @@ class StashManager:
         final_encfs_root = self.stashes[stash_name]["encfs_root"]
 
         os.environ["ENCFS6_CONFIG"] = loc_stash["config_file"]
-        if "test" in opts and opts["test"]:
+        if test_run:
             print(_("{0} should be mounted without problem (DRY RUN)")
                   .format(final_mount_point))
             return True
@@ -435,20 +489,30 @@ class StashManager:
             print("{0} NOT mounted".format(final_mount_point))
             return False
 
+        if not self.create_lock(stash_name):
+            print(_("ERROR: Impossible to create {0} remote lock.")
+                  .format(stash_name))
+            return False
+
         print(_("{0} mounted").format(final_mount_point))
 
         return True
 
     def unmount(self, opts):
+        test_run = "test" in opts and opts["test"]
         stash_name = opts["stash"]
         self.valid_stash(stash_name)
         if stash_name in self.unmounted_stashes():
             raise CarpMountError(_("{0} not mounted.")
                                  .format(stash_name))
 
+        if not self.is_locked(stash_name):
+            print(_("WARNING: {0} seems not to be remotely locked. "
+                    "Sync with caution.").format(stash_name))
+
         final_mount_point = os.path.join(self.mount_point(), stash_name)
 
-        if "test" in opts and opts["test"]:
+        if test_run:
             print(_("{0} should be unmounted without problem (DRY RUN)")
                   .format(final_mount_point))
             return True
@@ -460,6 +524,11 @@ class StashManager:
             print(_("ERROR: Something strange happened with fusermount."
                     " {0} NOT unmounted")
                   .format(final_mount_point))
+            return False
+
+        if not self.remove_lock(stash_name):
+            print(_("ERROR: Impossible to remove {0} remote lock.")
+                  .format(stash_name))
             return False
 
         print(_("{0} unmounted").format(final_mount_point))

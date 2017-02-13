@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Carp 0.3\n"
 "Report-Msgid-Bugs-To: bugs@depar.is\n"
-"POT-Creation-Date: 2017-02-14 00:27+0100\n"
-"PO-Revision-Date: 2017-02-14 00:30+0100\n"
+"POT-Creation-Date: 2017-02-14 00:51+0100\n"
+"PO-Revision-Date: 2017-02-14 00:52+0100\n"
 "Last-Translator: Étienne Deparis <etienne@depar.is>\n"
 "Language-Team: French\n"
 "Language: fr\n"
@@ -198,52 +198,77 @@ msgid "Something went wrong while saving your password."
 msgstr ""
 "Une erreur est survenue lors de l'enregistrement de votre mot de passe."
 
-#: carp/stash_manager.py:453
+#: carp/stash_manager.py:454
 #, python-brace-format
 msgid "{0} already mounted."
 msgstr "{0} est déjà monté."
 
-#: carp/stash_manager.py:421
+#: carp/stash_manager.py:458
+#, python-brace-format
+msgid "{0} cannot be mounted as it is locked by another carp instance"
+msgstr ""
+"{0} ne peut pas être monté car il est verrouillé par une autre instance de "
+"carp"
+
+#: carp/stash_manager.py:461
+msgid "(DRY RUN)"
+msgstr "(ESSAI À BLANC)"
+
+#: carp/stash_manager.py:474
 #, python-brace-format
 msgid "{0} should be mounted without problem (DRY RUN)"
 msgstr "{0} devrait pouvoir être monté sans problème (ESSAI À BLANC)"
 
-#: carp/stash_manager.py:439
+#: carp/stash_manager.py:493
+#, python-brace-format
+msgid "ERROR: Impossible to create {0} remote lock."
+msgstr "ERREUR : Impossible de créer un verrou distant pour {0}."
+
+#: carp/stash_manager.py:497
 #, python-brace-format
 msgid "{0} mounted"
 msgstr "{0} monté"
 
-#: carp/stash_manager.py:505
+#: carp/stash_manager.py:506
 #, python-brace-format
 msgid "{0} not mounted."
 msgstr "{0} non monté"
 
-#: carp/stash_manager.py:515
+#: carp/stash_manager.py:510
+#, python-brace-format
+msgid "WARNING: {0} seems not to be remotely locked. Sync with caution."
+msgstr ""
+"ATTENTION : {0} ne semblait pas verrouillé à distance. Synchronisez le avec "
+"prudence."
+
+#: carp/stash_manager.py:516
 #, python-brace-format
 msgid "{0} should be unmounted without problem (DRY RUN)"
 msgstr "{0} devrait pouvoir être démonté sans problème (ESSAI À BLANC)"
 
-#: carp/stash_manager.py:523
+#: carp/stash_manager.py:524
 #, python-brace-format
 msgid "ERROR: Something strange happened with fusermount. {0} NOT unmounted"
 msgstr ""
 "ERREUR : Quelque chose d'inattendu s'est produit avec fusermount. {0} n'est "
 "PAS démonté"
 
-#: carp/stash_manager.py:529
+#: carp/stash_manager.py:530
 #, python-brace-format
+msgid "ERROR: Impossible to remove {0} remote lock."
+msgstr "ERREUR : Impossible de supprimer le verrou distant de {0}."
 
-#: carp/stash_manager.py:533
+#: carp/stash_manager.py:534
 #, python-brace-format
 msgid "{0} unmounted"
 msgstr "{0} démonté"
 
-#: carp/stash_manager.py:542
+#: carp/stash_manager.py:543
 #, python-brace-format
 msgid "{0} should not be pulled while being mounted."
 msgstr "{0} ne peut pas être récupéré tant qu'il est monté."
 
-#: carp/stash_manager.py:545
+#: carp/stash_manager.py:546
 #, python-brace-format
 msgid "No remote configured for {0}"
 msgstr "Pas de configuration distante trouvée pour {0}"

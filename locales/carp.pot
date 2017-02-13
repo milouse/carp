@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Carp 0.5\n"
 "Report-Msgid-Bugs-To: bugs@depar.is\n"
-"POT-Creation-Date: 2017-02-14 00:27+0100\n"
+"POT-Creation-Date: 2017-02-14 00:51+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -187,52 +187,71 @@ msgstr ""
 msgid "Something went wrong while saving your password."
 msgstr ""
 
-#: carp/stash_manager.py:453
+#: carp/stash_manager.py:454
 #, python-brace-format
 msgid "{0} already mounted."
 msgstr ""
 
-#: carp/stash_manager.py:421
+#: carp/stash_manager.py:458
+#, python-brace-format
+msgid "{0} cannot be mounted as it is locked by another carp instance"
+msgstr ""
+
+#: carp/stash_manager.py:461
+msgid "(DRY RUN)"
+msgstr ""
+
+#: carp/stash_manager.py:474
 #, python-brace-format
 msgid "{0} should be mounted without problem (DRY RUN)"
 msgstr ""
 
-#: carp/stash_manager.py:439
+#: carp/stash_manager.py:493
+#, python-brace-format
+msgid "ERROR: Impossible to create {0} remote lock."
+msgstr ""
+
+#: carp/stash_manager.py:497
 #, python-brace-format
 msgid "{0} mounted"
 msgstr ""
 
-#: carp/stash_manager.py:505
+#: carp/stash_manager.py:506
 #, python-brace-format
 msgid "{0} not mounted."
 msgstr ""
 
-#: carp/stash_manager.py:515
+#: carp/stash_manager.py:510
+#, python-brace-format
+msgid "WARNING: {0} seems not to be remotely locked. Sync with caution."
+msgstr ""
+
+#: carp/stash_manager.py:516
 #, python-brace-format
 msgid "{0} should be unmounted without problem (DRY RUN)"
 msgstr ""
 
-#: carp/stash_manager.py:523
+#: carp/stash_manager.py:524
 #, python-brace-format
 msgid "ERROR: Something strange happened with fusermount. {0} NOT unmounted"
 msgstr ""
 
-#: carp/stash_manager.py:529
+#: carp/stash_manager.py:530
+#, python-brace-format
+msgid "ERROR: Impossible to remove {0} remote lock."
+msgstr ""
+
+#: carp/stash_manager.py:534
 #, python-brace-format
 msgid "{0} unmounted"
 msgstr ""
 
-#: carp/stash_manager.py:533
-#, python-brace-format
-msgid "{0} unmounted"
-msgstr ""
-
-#: carp/stash_manager.py:542
+#: carp/stash_manager.py:543
 #, python-brace-format
 msgid "{0} should not be pulled while being mounted."
 msgstr ""
 
-#: carp/stash_manager.py:545
+#: carp/stash_manager.py:546
 #, python-brace-format
 msgid "No remote configured for {0}"
 msgstr ""
