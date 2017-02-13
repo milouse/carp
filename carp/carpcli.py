@@ -85,7 +85,7 @@ For exemple: %(prog)s create --help
             "list", help="List your EncFS stashes.")
         parser_create = subparsers.add_parser(
             "create", help="Create a new EncFS stash.")
-        parser_mount = subparsers.add_parser(
+        subparsers.add_parser(
             "mount", help="Mount an existing EncFS stash.",
             parents=[parent_parser])
         subparsers.add_parser(
@@ -115,11 +115,6 @@ For exemple: %(prog)s create --help
         parser_list.add_argument("-r", "--raw", action="store_true",
                                  help="Don't display stash current state "
                                  "(only useful for 'all' subcommand).")
-
-        parser_mount.add_argument("-w", "--watch", action="store_true",
-                                  help="Monitor this stash activity "
-                                  "while mounted to prevent you from "
-                                  "pulling unexpected things over it.")
 
         args = parser.parse_args()
 
@@ -154,9 +149,7 @@ For exemple: %(prog)s create --help
         return self.get_stash(opts)
 
     def mount(self, opts):
-        lo = self.get_stash(opts)
-        lo["watch"] = opts.watch
-        return lo
+        return self.get_stash(opts)
 
     def unmount(self, opts):
         return self.get_stash(opts)

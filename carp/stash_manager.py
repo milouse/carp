@@ -10,8 +10,6 @@ from getpass import getpass
 from configparser import ConfigParser
 from xdg.BaseDirectory import xdg_config_home
 
-from carp.stash_watcher import StashWatcher
-
 import gettext
 CARP_L10N_PATH = "./locales"
 # Explicit declaration to avoid flake8 fear.
@@ -21,9 +19,7 @@ _ = gettext.gettext
 
 CARP_STASH_POSSIBLE_STATUS = {
     "-": "-",  # if it works it ain't stupid
-    "mounted": _("mounted"),
-    "changed": _("changed"),
-    "watched": _("watched")
+    "mounted": _("mounted")
 }
 
 
@@ -53,8 +49,6 @@ class CarpMustBePushedError(Exception):
 
 class StashManager:
     def __init__(self, config_file):
-        self.stash_watcher = StashWatcher()
-
         self.config_file = config_file
         self.config = ConfigParser()
         self.config.read(self.config_file)
@@ -76,13 +70,6 @@ class StashManager:
             loc_emp = self.init_stash(sec)
             if loc_emp:
                 self.stashes[sec] = loc_emp
-
-        for st in self.unmounted_stashes():
-            if self.stash_watcher.is_watched(st):
-                print(_("{0} watch seems to have been orphaned by "
-                        "its process. Killing it now.").format(st),
-                      file=sys.stderr)
-                self.stash_watcher.stop(st)
 
     def init_stash(self, stash_name):
         if stash_name == "general":
@@ -211,15 +198,6 @@ class StashManager:
         lin_home = os.path.expanduser("~")
 
         if not no_state:
-            if state == "mounted" \
-              and self.stash_watcher.is_watched(stash_name):
-                state = "watched"
-
-            change_file = os.path.join(xdg_config_home, ".carp",
-                                       stash_name, "last-change")
-            if os.path.exists(change_file):
-                state = "changed"
-
             pdata.append(CARP_STASH_POSSIBLE_STATUS[state])
 
         encfs_mp = self.stashes[stash_name]["encfs_root"]
@@ -230,7 +208,7 @@ class StashManager:
 
         if not no_state:
             final_mp = os.path.join(self.mount_point(), stash_name)
-            if state not in ["mounted", "watched"]:
+            if state != "mounted":
                 pdata.append("-")
             elif os.path.exists(final_mp):
                 pdata.append(re.sub(lin_home, "~", final_mp))
@@ -459,10 +437,6 @@ class StashManager:
 
         print(_("{0} mounted").format(final_mount_point))
 
-        if opts["watch"]:
-            self.stash_watcher.start(
-                stash_name, self.stashes[stash_name]["encfs_root"])
-
         return True
 
     def unmount(self, opts):
@@ -489,8 +463,6 @@ class StashManager:
 
         print(_("{0} unmounted").format(final_mount_point))
 
-        self.stash_watcher.stop(stash_name)
-
         return True
 
     def rsync(self, opts, direction="pull"):
@@ -503,16 +475,6 @@ class StashManager:
         if not self.stashes[stash_name]["remote_path"]:
             raise CarpNoRemoteError(_("No remote configured for {0}")
                                     .format(stash_name))
-
-        change_file = os.path.join(xdg_config_home, ".carp",
-                                   stash_name, "last-change")
-        if os.path.exists(change_file):
-            if direction == "pull":
-                raise CarpMustBePushedError(
-                    _("{0} have changes, which need to "
-                      "be pushed first.").format(stash_name))
-            else:
-                os.unlink(change_file)
 
         av_opt = "-av"
         if "test" in opts and opts["test"]:

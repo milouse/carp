@@ -73,17 +73,6 @@ class CarpGui:
         current_state_info.set_sensitive(False)
         mm.append(current_state_info)
 
-        change_file = os.path.join(xdg_config_home, ".carp",
-                                   stash_name, "last-change")
-        if os.path.exists(change_file):
-            mi_button = Gtk.MenuItem.new_with_label(
-                _("There are changes to push"))
-        else:
-            mi_button = Gtk.MenuItem.new_with_label(_("Nothing to report"))
-            mi_button.set_sensitive(False)
-
-        mm.append(mi_button)
-
         mount_label = _("Unmount {0}").format(stash_name)
         mount_action = "unmount"
         if is_unmounted:
@@ -177,11 +166,8 @@ class CarpGui:
             return False
 
         cmd_opts = {"stash": stash_name}
-        if action == "mount":
-            cmd_opts["watch"] = True
-
-            if not self.sm.stashes[stash_name]["pass_file"]:
-                cmd_opts["pass_cmd"] = "zenity --password"
+        if action == "mount" and not self.sm.stashes[stash_name]["pass_file"]:
+            cmd_opts["pass_cmd"] = "zenity --password"
 
         try:
             success = getattr(self.sm, action)(cmd_opts)
