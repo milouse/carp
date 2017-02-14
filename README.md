@@ -4,8 +4,8 @@ carp is an EncFS frontend to ease day-to-day creating, mounting and
 umounting your various stashes. Using this script, your stash will
 always be mounted under *~/Private*.
 
-Main development occurs here: https://projects.depar.is/carp/ That's
-here you must create tickets if you find some bugs. However, pull
+Main development occurs here: https://projects.deparis.io/projects/carp/
+That's here you must create tickets if you find some bugs. However, pull
 request could be pushed to github too.
 
 ## Usage

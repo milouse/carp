@@ -230,14 +230,14 @@ StartupNotify=false
     def report_a_bug(self, widget):
         subprocess.Popen(
             ["xdg-open",
-             "https://projects.depar.is/carp/ticket"])
+             "https://projects.deparis.io/projects/carp/issues/new"])
 
     def show_about_dialog(self, widget):
         about_dialog = Gtk.AboutDialog()
         about_dialog.set_destroy_with_parent(True)
         about_dialog.set_icon_name("folder_locked")
         about_dialog.set_name("Carp")
-        about_dialog.set_website("https://projects.depar.is/carp")
+        about_dialog.set_website("https://projects.deparis.io/projects/carp/")
         about_dialog.set_comments(_("EncFS GUI managing tool"))
         about_dialog.set_version(VERSION)
         about_dialog.set_copyright(_("Carp is released under the WTFPL"))
