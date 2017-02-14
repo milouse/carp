@@ -212,8 +212,9 @@ class CarpGui:
                       "w") as asfile:
                 asfile.write("""\
 [Desktop Entry]
-Name=Carp
-Comment=EncFS GUI managing tool
+Name={}
+GenericName={}
+Comment={}
 Exec=carp gui
 Icon=folder_locked
 Terminal=false
@@ -221,7 +222,7 @@ Type=Application
 X-MATE-Autostart-enabled=true
 X-GNOME-Autostart-Delay=20
 StartupNotify=false
-""")
+""".format(_("Carp"), _("EncFS manager"), _("EncFS GUI managing tool")))
 
         elif file_yet_exists and not self.must_autostart:
             os.remove(os.path.join(
@@ -236,7 +237,7 @@ StartupNotify=false
         about_dialog = Gtk.AboutDialog()
         about_dialog.set_destroy_with_parent(True)
         about_dialog.set_icon_name("folder_locked")
-        about_dialog.set_name("Carp")
+        about_dialog.set_name(_("Carp"))
         about_dialog.set_website("https://projects.deparis.io/projects/carp/")
         about_dialog.set_comments(_("EncFS GUI managing tool"))
         about_dialog.set_version(VERSION)

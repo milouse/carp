@@ -1,273 +1,259 @@
 # Carp Translation Effort
 # Copyright (C) 2017 Carp volunteers
 # This file is distributed under the same license as the Carp package.
-#  <etienne@depar.is>, 2017.
+# Étienne Deparis <etienne@depar.is>, 2017.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Carp 0.3\n"
+"Project-Id-Version: Carp 0.5\n"
 "Report-Msgid-Bugs-To: bugs@depar.is\n"
 "POT-Creation-Date: 2017-02-14 17:31+0100\n"
-"PO-Revision-Date: 2017-02-14 17:34+0100\n"
+"PO-Revision-Date: 2017-02-14 17:37+0100\n"
 "Last-Translator: Étienne Deparis <etienne@depar.is>\n"
-"Language-Team: French\n"
-"Language: fr\n"
+"Language-Team: English\n"
+"Language: en_US\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 1.8.11\n"
 
 #: carp/carpcli.py:29
 msgid "WTF command not recognized!"
-msgstr "Wow, la commande n'a pas été reconnue !"
+msgstr "WTF command not recognized!"
 
 #: carp/carpcli.py:46
 #, python-brace-format
 msgid "Working on {0}"
-msgstr "Travail sur {0}"
+msgstr "Working on {0}"
 
 #: carp/carpcli.py:58
 msgid "EncFS CLI managing tool"
-msgstr "Outil en ligne de commande pour EncFS"
+msgstr "EncFS CLI managing tool"
 
 #: carp/carpcli.py:72 carp/carpgui.py:57
 msgid "Customized config file."
-msgstr "Fichier de configuration personnalisé."
+msgstr "Customized config file."
 
 #: carp/stash_manager.py:22
 msgid "mounted"
-msgstr "monté"
+msgstr "mounted"
 
 #: carp/stash_manager.py:87 carp/stash_manager.py:108
 #, python-brace-format
 msgid "{0} does not exists."
-msgstr "{0} n'existe pas."
+msgstr "{0} does not exists."
 
 #: carp/stash_manager.py:120
 #, python-brace-format
 msgid "{0} already exists in your file system but is NOT an empty folder."
-msgstr "{0} existe déjà sur votre système de fichiers mais n'est PAS vide."
+msgstr "{0} already exists in your file system but is NOT an empty folder."
 
 #: carp/stash_manager.py:123
 #, python-brace-format
 msgid "WARNING: {0} does not exists, thus we create an empty one"
-msgstr "ATTENTION : {0} n'existe pas, nous allons donc le créer"
+msgstr "WARNING: {0} does not exists, thus we create an empty one"
 
 #: carp/stash_manager.py:133
 #, python-brace-format
 msgid "{0} is not an empty dirctory. It cannot be used as a new EncFS stash."
-msgstr ""
-"{0} n'est pas un dossier vide et ne peut donc pas être utilisé comme un "
-"nouveau coffre fort EncFS."
+msgstr "{0} is not an empty dirctory. It cannot be used as a new EncFS stash."
 
 #: carp/stash_manager.py:166
 #, python-brace-format
 msgid "{0} is not a known stash."
-msgstr "{0} n'est pas un coffre fort connu."
+msgstr "{0} is not a known stash."
 
 #: carp/stash_manager.py:241 carp/stash_manager.py:284
 #: carp/stash_manager.py:289
 msgid "NAME"
-msgstr "NOM"
+msgstr "NAME"
 
 #: carp/stash_manager.py:242 carp/stash_manager.py:290
 msgid "PATH"
-msgstr "ACCÈS"
+msgstr "PATH"
 
 #: carp/stash_manager.py:243 carp/stash_manager.py:284
 #: carp/stash_manager.py:290
 msgid "REMOTE"
-msgstr "DISTANT"
+msgstr "REMOTE"
 
 #: carp/stash_manager.py:244 carp/stash_manager.py:284
 #: carp/stash_manager.py:289
 msgid "ROOT"
-msgstr "ORIGINE"
+msgstr "ROOT"
 
 #: carp/stash_manager.py:247 carp/stash_manager.py:289
 msgid "STATE"
-msgstr "ÉTAT"
+msgstr "STATE"
 
 #: carp/stash_manager.py:285 carp/stash_manager.py:290
 msgid "SIZE"
-msgstr "TAILLE"
+msgstr "SIZE"
 
 #: carp/stash_manager.py:360
 msgid "Something went wrong with EncFS"
-msgstr "Une erreur est survenue lors de l'appel à EncFS"
+msgstr "Something went wrong with EncFS"
 
 #: carp/stash_manager.py:365
 msgid "EncFS stash successfully created. Time to save new configuration."
-msgstr ""
-"Le nouveau coffre fort EncFS a été créé avec succès. Passons à sa "
-"configuration."
+msgstr "EncFS stash successfully created. Time to save new configuration."
 
 #: carp/stash_manager.py:380
 msgid ""
 "Please enter your password a last time in order to save it in your home "
 "folder. Leave it blank and press enter if you changed your mind."
 msgstr ""
-"Merci d'entrer votre mot de passe une dernière fois afin de l'enregistrer "
-"dans votre dossier personnel. Vous pouvez simplement appuyer sur Entrée si "
-"vous ne souhaitez plus l'enregistrer."
+"Please enter your password a last time in order to save it in your home "
+"folder. Leave it blank and press enter if you changed your mind."
 
 #: carp/stash_manager.py:396
 msgid "Something went wrong while saving your password."
-msgstr ""
-"Une erreur est survenue lors de l'enregistrement de votre mot de passe."
+msgstr "Something went wrong while saving your password."
 
 #: carp/stash_manager.py:454
 #, python-brace-format
 msgid "{0} already mounted."
-msgstr "{0} est déjà monté."
+msgstr "{0} already mounted."
 
 #: carp/stash_manager.py:458
 #, python-brace-format
 msgid "{0} cannot be mounted as it is locked by another carp instance"
-msgstr ""
-"{0} ne peut pas être monté car il est verrouillé par une autre instance de "
-"carp"
+msgstr "{0} cannot be mounted as it is locked by another carp instance"
 
 #: carp/stash_manager.py:461
 msgid "(DRY RUN)"
-msgstr "(ESSAI À BLANC)"
+msgstr "(DRY RUN)"
 
 #: carp/stash_manager.py:474
 #, python-brace-format
 msgid "{0} should be mounted without problem (DRY RUN)"
-msgstr "{0} devrait pouvoir être monté sans problème (ESSAI À BLANC)"
+msgstr "{0} should be mounted without problem (DRY RUN)"
 
 #: carp/stash_manager.py:493
 #, python-brace-format
 msgid "ERROR: Impossible to create {0} remote lock."
-msgstr "ERREUR : Impossible de créer un verrou distant pour {0}."
+msgstr "ERROR: Impossible to create {0} remote lock."
 
 #: carp/stash_manager.py:497
 #, python-brace-format
 msgid "{0} mounted"
-msgstr "{0} monté"
+msgstr "{0} mounted"
 
 #: carp/stash_manager.py:506
 #, python-brace-format
 msgid "{0} not mounted."
-msgstr "{0} non monté"
+msgstr "{0} not mounted."
 
 #: carp/stash_manager.py:510
 #, python-brace-format
 msgid "WARNING: {0} seems not to be remotely locked. Sync with caution."
-msgstr ""
-"ATTENTION : {0} ne semblait pas verrouillé à distance. Synchronisez le avec "
-"prudence."
+msgstr "WARNING: {0} seems not to be remotely locked. Sync with caution."
 
 #: carp/stash_manager.py:516
 #, python-brace-format
 msgid "{0} should be unmounted without problem (DRY RUN)"
-msgstr "{0} devrait pouvoir être démonté sans problème (ESSAI À BLANC)"
+msgstr "{0} should be unmounted without problem (DRY RUN)"
 
 #: carp/stash_manager.py:524
 #, python-brace-format
 msgid "ERROR: Something strange happened with fusermount. {0} NOT unmounted"
-msgstr ""
-"ERREUR : Quelque chose d'inattendu s'est produit avec fusermount. {0} n'est "
-"PAS démonté"
+msgstr "ERROR: Something strange happened with fusermount. {0} NOT unmounted"
 
 #: carp/stash_manager.py:530
 #, python-brace-format
 msgid "ERROR: Impossible to remove {0} remote lock."
-msgstr "ERREUR : Impossible de supprimer le verrou distant de {0}."
+msgstr "ERROR: Impossible to remove {0} remote lock."
 
 #: carp/stash_manager.py:534
 #, python-brace-format
 msgid "{0} unmounted"
-msgstr "{0} démonté"
+msgstr "{0} unmounted"
 
 #: carp/stash_manager.py:543
 #, python-brace-format
 msgid "{0} should not be pulled while being mounted."
-msgstr "{0} ne peut pas être récupéré tant qu'il est monté."
+msgstr "{0} should not be pulled while being mounted."
 
 #: carp/stash_manager.py:546
 #, python-brace-format
 msgid "No remote configured for {0}"
-msgstr "Pas de configuration distante trouvée pour {0}"
+msgstr "No remote configured for {0}"
 
 #: carp/carpgui.py:27
 msgid "mount"
-msgstr "mont"
+msgstr "mount"
 
 #: carp/carpgui.py:28
 msgid "unmount"
-msgstr "démont"
+msgstr "unmount"
 
 #: carp/carpgui.py:29
 msgid "pull"
-msgstr "récupér"
+msgstr "pull"
 
 #: carp/carpgui.py:30
 msgid "push"
-msgstr "pouss"
+msgstr "push"
 
 #: carp/carpgui.py:49 carp/carpgui.py:225 carp/carpgui.py:242
 msgid "EncFS GUI managing tool"
-msgstr "Interface de gestion pour EncFS"
+msgstr "EncFS GUI managing tool"
 
 #: carp/carpgui.py:72
 #, python-brace-format
 msgid "Use {0} of space"
-msgstr "{0} d'espace utilisé"
+msgstr "Use {0} of space"
 
 #: carp/carpgui.py:76
 #, python-brace-format
 msgid "Unmount {0}"
-msgstr "Démonter {0}"
+msgstr "Unmount {0}"
 
 #: carp/carpgui.py:79
 #, python-brace-format
 msgid "Mount {0}"
-msgstr "Monter {0}"
+msgstr "Mount {0}"
 
 #: carp/carpgui.py:89
 #, python-brace-format
 msgid "Pull {0}"
-msgstr "Récupérer {0}"
+msgstr "Pull {0}"
 
 #: carp/carpgui.py:95
 #, python-brace-format
 msgid "Push {0}"
-msgstr "Pousser {0}"
+msgstr "Push {0}"
 
 #: carp/carpgui.py:100
 msgid "Open"
-msgstr "Ouvrir"
+msgstr "Open"
 
 #: carp/carpgui.py:105
 msgid "Open in term"
-msgstr "Ouvrir dans un terminal"
+msgstr "Open in term"
 
 #: carp/carpgui.py:123
 msgid "An error occured while retrieving your stashes' list"
-msgstr ""
-"Une erreur est survenue lors de la récupération de votre liste de coffres "
-"fort"
+msgstr "An error occured while retrieving your stashes' list"
 
 #: carp/carpgui.py:140
 msgid "Automatically start"
-msgstr "Lancer au démarrage de la session"
+msgstr "Automatically start"
 
 #: carp/carpgui.py:146
 msgid "Report a bug"
-msgstr "Rapporter un bogue"
+msgstr "Report a bug"
 
 #: carp/carpgui.py:180
 #, python-brace-format
 msgid "{0} correctly {1}ed"
-msgstr "{0} a été correctement {1}é"
+msgstr "{0} correctly {1}ed"
 
 #: carp/carpgui.py:184
 #, python-brace-format
 msgid "An error occured while {1}ing {0}"
-msgstr "Une erreur est survenue alors que le système {1}ait {0}"
+msgstr "An error occured while {1}ing {0}"
 
 #: carp/carpgui.py:225 carp/carpgui.py:240
 msgid "Carp"
@@ -275,44 +261,8 @@ msgstr "Carp"
 
 #: carp/carpgui.py:225
 msgid "EncFS manager"
-msgstr "Gestionnaire EncFS"
+msgstr "EncFS manager"
 
 #: carp/carpgui.py:244
 msgid "Carp is released under the WTFPL"
-msgstr "Carp est disponible selon les termes de la WTFPL"
-
-#~ msgid "There are changes to push"
-#~ msgstr "Des changements doivent être poussés"
-
-#~ msgid "Nothing to report"
-#~ msgstr "Rien à déclarer"
-
-#~ msgid "changed"
-#~ msgstr "changé"
-
-#~ msgid "An error happened, {0} NOT unmounted"
-#~ msgstr "Une erreur est survenue. {0} n'est PAS démonté"
-
-#~ msgid "{0} have changes, which need to be pushed first."
-#~ msgstr "{0} contient des changements qui doivent d'abord être poussés."
-
-#~ msgid "watched"
-#~ msgstr "surveillé"
-
-#~ msgid ""
-#~ "{0} watch seems to have been orphaned by its process. Killing it now."
-#~ msgstr ""
-#~ "La veille de {0} semble avoir été oubliée par son process. Arrêtons-la de "
-#~ "suite."
-
-#~ msgid "Trying to start an already started watch for {0}"
-#~ msgstr "Essai de lancement d'une veille déjà démarré pour {0}"
-
-#~ msgid "Error starting watch for {0}"
-#~ msgstr "Erreur lors du lancement de la veille pour {0}"
-
-#~ msgid "Trying to stop an already stopped watch for {0}"
-#~ msgstr "Essai d'arrêt d'une veille déjà arrêté pour {0}"
-
-#~ msgid "{0} seems to be watched by another process."
-#~ msgstr "{0} semble observé par un autre process."
+msgstr "Carp is released under the WTFPL"

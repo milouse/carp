@@ -1,5 +1,5 @@
 # Carp Translation Effort
-# Copyright (C) YEAR Carp volunteers
+# Copyright (C) 2017 Carp volunteers
 # This file is distributed under the same license as the Carp package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Carp 0.5\n"
 "Report-Msgid-Bugs-To: bugs@depar.is\n"
-"POT-Creation-Date: 2017-02-14 00:51+0100\n"
+"POT-Creation-Date: 2017-02-14 17:31+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -32,85 +32,6 @@ msgstr ""
 
 #: carp/carpcli.py:72 carp/carpgui.py:57
 msgid "Customized config file."
-msgstr ""
-
-#: carp/carpgui.py:27
-msgid "mount"
-msgstr ""
-
-#: carp/carpgui.py:28
-msgid "unmount"
-msgstr ""
-
-#: carp/carpgui.py:29
-msgid "pull"
-msgstr ""
-
-#: carp/carpgui.py:30
-msgid "push"
-msgstr ""
-
-#: carp/carpgui.py:49 carp/carpgui.py:241
-msgid "EncFS GUI managing tool"
-msgstr ""
-
-#: carp/carpgui.py:72
-#, python-brace-format
-msgid "Use {0} of space"
-msgstr ""
-
-#: carp/carpgui.py:76
-#, python-brace-format
-msgid "Unmount {0}"
-msgstr ""
-
-#: carp/carpgui.py:79
-#, python-brace-format
-msgid "Mount {0}"
-msgstr ""
-
-#: carp/carpgui.py:89
-#, python-brace-format
-msgid "Pull {0}"
-msgstr ""
-
-#: carp/carpgui.py:95
-#, python-brace-format
-msgid "Push {0}"
-msgstr ""
-
-#: carp/carpgui.py:100
-msgid "Open"
-msgstr ""
-
-#: carp/carpgui.py:105
-msgid "Open in term"
-msgstr ""
-
-#: carp/carpgui.py:123
-msgid "An error occured while retrieving your stashes' list"
-msgstr ""
-
-#: carp/carpgui.py:140
-msgid "Automatically start"
-msgstr ""
-
-#: carp/carpgui.py:146
-msgid "Report a bug"
-msgstr ""
-
-#: carp/carpgui.py:180
-#, python-brace-format
-msgid "{0} correctly {1}ed"
-msgstr ""
-
-#: carp/carpgui.py:184
-#, python-brace-format
-msgid "An error occured while {1}ing {0}"
-msgstr ""
-
-#: carp/carpgui.py:243
-msgid "Carp is released under the WTFPL"
 msgstr ""
 
 #: carp/stash_manager.py:22
@@ -254,4 +175,91 @@ msgstr ""
 #: carp/stash_manager.py:546
 #, python-brace-format
 msgid "No remote configured for {0}"
+msgstr ""
+
+#: carp/carpgui.py:27
+msgid "mount"
+msgstr ""
+
+#: carp/carpgui.py:28
+msgid "unmount"
+msgstr ""
+
+#: carp/carpgui.py:29
+msgid "pull"
+msgstr ""
+
+#: carp/carpgui.py:30
+msgid "push"
+msgstr ""
+
+#: carp/carpgui.py:49 carp/carpgui.py:225 carp/carpgui.py:242
+msgid "EncFS GUI managing tool"
+msgstr ""
+
+#: carp/carpgui.py:72
+#, python-brace-format
+msgid "Use {0} of space"
+msgstr ""
+
+#: carp/carpgui.py:76
+#, python-brace-format
+msgid "Unmount {0}"
+msgstr ""
+
+#: carp/carpgui.py:79
+#, python-brace-format
+msgid "Mount {0}"
+msgstr ""
+
+#: carp/carpgui.py:89
+#, python-brace-format
+msgid "Pull {0}"
+msgstr ""
+
+#: carp/carpgui.py:95
+#, python-brace-format
+msgid "Push {0}"
+msgstr ""
+
+#: carp/carpgui.py:100
+msgid "Open"
+msgstr ""
+
+#: carp/carpgui.py:105
+msgid "Open in term"
+msgstr ""
+
+#: carp/carpgui.py:123
+msgid "An error occured while retrieving your stashes' list"
+msgstr ""
+
+#: carp/carpgui.py:140
+msgid "Automatically start"
+msgstr ""
+
+#: carp/carpgui.py:146
+msgid "Report a bug"
+msgstr ""
+
+#: carp/carpgui.py:180
+#, python-brace-format
+msgid "{0} correctly {1}ed"
+msgstr ""
+
+#: carp/carpgui.py:184
+#, python-brace-format
+msgid "An error occured while {1}ing {0}"
+msgstr ""
+
+#: carp/carpgui.py:225 carp/carpgui.py:240
+msgid "Carp"
+msgstr ""
+
+#: carp/carpgui.py:225
+msgid "EncFS manager"
+msgstr ""
+
+#: carp/carpgui.py:244
+msgid "Carp is released under the WTFPL"
 msgstr ""
