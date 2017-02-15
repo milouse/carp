@@ -61,6 +61,8 @@ class StashManager:
         self._encfs_root = None
         self.config["general"]["encfs_root"] = self.encfs_root()
 
+        self.locked_by = []
+
         self.write_config()
         self.reload_stashes()
 
@@ -412,17 +414,20 @@ class StashManager:
         if len(ssh_parts) != 2:
             return None
 
-        return ["ssh", ssh_parts[0], "ls", os.path.join(ssh_parts[1], "lock")]
+        return ["ssh", ssh_parts[0], "ls", os.path.join(ssh_parts[1], "lock*")]
 
     def is_locked(self, stash_name):
         ssh_cmd = self.ssh_command(stash_name)
         if not ssh_cmd:
             return False
 
-        cmd = subprocess.run(
-            ssh_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        cmd = subprocess.run(ssh_cmd, check=True,
+                             stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
         if cmd.returncode != 0:
             return False
+
+        self.locked_by = [re.sub(r"^.*/lock\.(.+)$", "\\1", lock_name)
+                          for lock_name in cmd.stdout.decode().split()]
 
         return True
 
@@ -432,6 +437,7 @@ class StashManager:
             return False
 
         ssh_cmd[2] = "touch"
+        ssh_cmd[3] = "lock.{}".format(os.uname().nodename)
         subprocess.run(ssh_cmd)
 
         return self.is_locked(stash_name)
@@ -442,6 +448,7 @@ class StashManager:
             return False
 
         ssh_cmd[2] = "rm"
+        ssh_cmd[3] = "lock.{}".format(os.uname().nodename)
         subprocess.run(ssh_cmd, stderr=subprocess.DEVNULL)
 
         return not self.is_locked(stash_name)
@@ -456,11 +463,11 @@ class StashManager:
 
         if self.is_locked(stash_name):
             err_mess = _("{0} cannot be mounted as it is locked by "
-                         "another carp instance")
+                         "another carp instance: {1}")
             if test_run:
                 err_mess += " " + _("(DRY RUN)")
 
-            print(err_mess.format(stash_name))
+            print(err_mess.format(stash_name, ", ".join(self.locked_by)))
             return False
 
         loc_stash = self.stashes[stash_name]
@@ -526,11 +533,6 @@ class StashManager:
                   .format(final_mount_point))
             return False
 
-        if not self.remove_lock(stash_name):
-            print(_("ERROR: Impossible to remove {0} remote lock.")
-                  .format(stash_name))
-            return False
-
         print(_("{0} unmounted").format(final_mount_point))
 
         return True
@@ -545,6 +547,17 @@ class StashManager:
         if not self.stashes[stash_name]["remote_path"]:
             raise CarpNoRemoteError(_("No remote configured for {0}")
                                     .format(stash_name))
+
+        if direction == "push" and self.is_locked(stash_name):
+            if os.uname().nodename not in self.locked_by:
+                print(_("ERROR: {0} is not locked by us, but {1}")
+                      .format(stash_name, ", ".join(self.locked_by)))
+                return False
+
+            if not self.remove_lock(stash_name):
+                print(_("ERROR: Impossible to remove {0} remote lock.")
+                      .format(stash_name))
+                return False
 
         av_opt = "-av"
         if "test" in opts and opts["test"]:
