@@ -404,7 +404,7 @@ class StashManager:
 
         return True
 
-    def ssh_command(self, stash_name):
+    def ssh_command(self, stash_name, action="ls"):
         if stash_name not in self.stashes:
             return None
         if not self.stashes[stash_name]["remote_path"]:
@@ -414,7 +414,12 @@ class StashManager:
         if len(ssh_parts) != 2:
             return None
 
-        return ["ssh", ssh_parts[0], "ls", os.path.join(ssh_parts[1], "lock*")]
+        lock_file = "lock*"
+        if action != "ls":
+            lock_file = "lock.{}".format(os.uname().nodename)
+
+        return ["ssh", ssh_parts[0], action,
+                os.path.join(ssh_parts[1], lock_file)]
 
     def is_locked(self, stash_name):
         ssh_cmd = self.ssh_command(stash_name)
@@ -434,23 +439,19 @@ class StashManager:
         return True
 
     def create_lock(self, stash_name):
-        ssh_cmd = self.ssh_command(stash_name)
+        ssh_cmd = self.ssh_command(stash_name, "touch")
         if not ssh_cmd:
             return False
 
-        ssh_cmd[2] = "touch"
-        ssh_cmd[3] = "lock.{}".format(os.uname().nodename)
         subprocess.run(ssh_cmd)
 
         return self.is_locked(stash_name)
 
     def remove_lock(self, stash_name):
-        ssh_cmd = self.ssh_command(stash_name)
+        ssh_cmd = self.ssh_command(stash_name, "rm")
         if not ssh_cmd:
             return False
 
-        ssh_cmd[2] = "rm"
-        ssh_cmd[3] = "lock.{}".format(os.uname().nodename)
         subprocess.run(ssh_cmd, stderr=subprocess.DEVNULL)
 
         return not self.is_locked(stash_name)
