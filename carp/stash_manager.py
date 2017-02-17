@@ -421,9 +421,11 @@ class StashManager:
         if not ssh_cmd:
             return False
 
-        cmd = subprocess.run(ssh_cmd, check=True,
-                             stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
-        if cmd.returncode != 0:
+        try:
+            cmd = subprocess.run(ssh_cmd, check=True,
+                                 stdout=subprocess.PIPE,
+                                 stderr=subprocess.DEVNULL)
+        except subprocess.CalledProcessError:
             return False
 
         self.locked_by = [re.sub(r"^.*/lock\.(.+)$", "\\1", lock_name)
