@@ -404,10 +404,17 @@ class StashManager:
 
         return True
 
-    def ssh_command(self, stash_name, action="ls"):
+    def may_sync(self, stash_name):
         if stash_name not in self.stashes:
-            return None
+            return False
         if not self.stashes[stash_name]["remote_path"]:
+            return False
+        if "nosync" in self.stashes[stash_name]:
+            return False
+        return True
+
+    def ssh_command(self, stash_name, action="ls"):
+        if not self.may_sync(stash_name):
             return None
 
         ssh_parts = self.stashes[stash_name]["remote_path"].split(":")
@@ -464,7 +471,10 @@ class StashManager:
             raise CarpMountError(_("{0} already mounted."
                                  .format(stash_name)))
 
-        if self.is_locked(stash_name):
+        if "nosync" in opts:
+            self.stashes[stash_name]["nosync"] = True
+
+        if self.may_sync(stash_name) and self.is_locked(stash_name):
             err_mess = _("{0} cannot be mounted as it is locked by "
                          "another carp instance: {1}")
             if test_run:
@@ -499,7 +509,7 @@ class StashManager:
             print("{0} NOT mounted".format(final_mount_point))
             return False
 
-        if not self.create_lock(stash_name):
+        if self.may_sync(stash_name) and not self.create_lock(stash_name):
             print(_("ERROR: Impossible to create {0} remote lock.")
                   .format(stash_name))
             return False
@@ -516,7 +526,10 @@ class StashManager:
             raise CarpMountError(_("{0} not mounted.")
                                  .format(stash_name))
 
-        if not self.is_locked(stash_name):
+        if "nosync" in opts:
+            self.stashes[stash_name]["nosync"] = True
+
+        if self.may_sync(stash_name) and not self.is_locked(stash_name):
             print(_("WARNING: {0} seems not to be remotely locked. "
                     "Sync with caution.").format(stash_name))
 

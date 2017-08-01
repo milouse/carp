@@ -77,6 +77,11 @@ For exemple: %(prog)s create --help
                                    action="store_true",
                                    help="Dry-run.")
 
+        sync_parser = ArgumentParser(add_help=False)
+        sync_parser.add_argument("-n", "--nosync",
+                                 action="store_true",
+                                 help="Disable lock creation/check.")
+
         subparsers = parser.add_subparsers(
             dest="command", title="Commands", help=None,
             metavar="what to do with your EncFS stashes:",
@@ -87,10 +92,10 @@ For exemple: %(prog)s create --help
             "create", help="Create a new EncFS stash.")
         subparsers.add_parser(
             "mount", help="Mount an existing EncFS stash.",
-            parents=[parent_parser])
+            parents=[parent_parser, sync_parser])
         subparsers.add_parser(
             "umount", help="Unmount a currently mounted EncFS stash.",
-            parents=[parent_parser])
+            parents=[parent_parser, sync_parser])
         subparsers.add_parser(
             "pull", help="Pull a distant stash.",
             parents=[parent_parser])
