@@ -508,7 +508,7 @@ class StashManager:
 
         return True
 
-    def unmount(self, opts):
+    def umount(self, opts):
         test_run = "test" in opts and opts["test"]
         stash_name = opts["stash"]
         self.valid_stash(stash_name)

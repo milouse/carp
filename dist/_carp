@@ -12,7 +12,7 @@ _carp () {
             mount)
                 _values 'Unmounted stash' $(carp list unmounted -r)
                 ;;
-            unmount)
+            umount)
                 if grep -q fuse\.encfs /proc/mounts; then
                     _values 'Mounted stash' $(carp list -r)
                 fi
@@ -30,7 +30,7 @@ _carp () {
 			"create:Create a new EncFS stash."
 			"list:List all your currently mounted EncFS stashes"
 			"mount:Mount an existing EncFS stash."
-			"unmount:Unmount a currently mounted EncFS stash."
+			"umount:Unmount a currently mounted EncFS stash."
             "pull:Pull a distant stash."
             "push:Push a distant stash."
 		)

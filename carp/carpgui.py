@@ -74,7 +74,7 @@ class CarpGui:
         mm.append(current_state_info)
 
         mount_label = _("Unmount {0}").format(stash_name)
-        mount_action = "unmount"
+        mount_action = "umount"
         if is_unmounted:
             mount_label = _("Mount {0}").format(stash_name)
             mount_action = "mount"
@@ -162,7 +162,7 @@ class CarpGui:
                    self.tray, event_button, event_time)
 
     def encfs_action(self, widget, action, stash_name):
-        if action not in ["mount", "unmount", "pull", "push"]:
+        if action not in ["mount", "umount", "pull", "push"]:
             return False
 
         cmd_opts = {"stash": stash_name}

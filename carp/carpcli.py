@@ -34,10 +34,10 @@ class CarpCli:
                 CarpNotEmptyDirectoryError) as e:
             self.die(str(e))
 
-        if self.command in ["mount", "unmount", "pull", "push"] and \
+        if self.command in ["mount", "umount", "pull", "push"] and \
            "stash" in self.options and self.options["stash"] == "all":
             work_on_stash = []
-            if self.command == "unmount":
+            if self.command == "umount":
                 work_on_stash = carp.mounted_stashes()
             else:
                 work_on_stash = carp.unmounted_stashes()
@@ -89,7 +89,7 @@ For exemple: %(prog)s create --help
             "mount", help="Mount an existing EncFS stash.",
             parents=[parent_parser])
         subparsers.add_parser(
-            "unmount", help="Unmount a currently mounted EncFS stash.",
+            "umount", help="Unmount a currently mounted EncFS stash.",
             parents=[parent_parser])
         subparsers.add_parser(
             "pull", help="Pull a distant stash.",
@@ -151,7 +151,7 @@ For exemple: %(prog)s create --help
     def mount(self, opts):
         return self.get_stash(opts)
 
-    def unmount(self, opts):
+    def umount(self, opts):
         return self.get_stash(opts)
 
     def create(self, opts):
