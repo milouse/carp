@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Carp 0.3\n"
 "Report-Msgid-Bugs-To: bugs@depar.is\n"
-"POT-Creation-Date: 2017-02-15 19:32+0100\n"
-"PO-Revision-Date: 2017-02-15 19:33+0100\n"
+"POT-Creation-Date: 2017-08-01 10:58+0200\n"
+"PO-Revision-Date: 2017-08-01 11:26+0200\n"
 "Last-Translator: Étienne Deparis <etienne@depar.is>\n"
 "Language-Team: French\n"
 "Language: fr\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"X-Generator: Poedit 1.8.11\n"
+"X-Generator: Poedit 2.0.3\n"
 
 #: carp/carpcli.py:29
 msgid "WTF command not recognized!"
@@ -31,9 +31,94 @@ msgstr "Travail sur {0}"
 msgid "EncFS CLI managing tool"
 msgstr "Outil en ligne de commande pour EncFS"
 
+#: carp/carpcli.py:62
+#, python-format
+msgid ""
+"Each command has its own help. To access it, do a:\n"
+"  %(prog)s command --help\n"
+"\n"
+"For exemple: %(prog)s create --help\n"
+msgstr ""
+"Chaque commande possède sa propre aide intégrée. Pour la parcourir, "
+"entrez :\n"
+"  %(prog)s command --help\n"
+"\n"
+"Par exemple : %(prog)s create --help\n"
+
+#: carp/carpcli.py:69
+msgid "Display carp version information and exit."
+msgstr "Affiche la version de carp et quitte aussitôt."
+
 #: carp/carpcli.py:72 carp/carpgui.py:57
 msgid "Customized config file."
 msgstr "Fichier de configuration personnalisé."
+
+#: carp/carpcli.py:75
+msgid "Stash to handle."
+msgstr "Coffre-fort à manipuler."
+
+#: carp/carpcli.py:78
+msgid "Dry-run."
+msgstr "Essai à blanc."
+
+#: carp/carpcli.py:83
+msgid "Disable lock creation/check."
+msgstr "Désactive la création/vérification des verrous distants."
+
+#: carp/carpcli.py:86
+msgid "Commands"
+msgstr "Commandes"
+
+#: carp/carpcli.py:87
+msgid "what to do with your EncFS stashes:"
+msgstr "quoi faire avec vos coffres-forts EncFS :"
+
+#: carp/carpcli.py:90
+msgid "List your EncFS stashes."
+msgstr "Liste vos coffres-forts EncFS."
+
+#: carp/carpcli.py:92
+msgid "Create a new EncFS stash."
+msgstr "Crée un nouveau coffre-fort EncFS."
+
+#: carp/carpcli.py:94
+msgid "Mount an existing EncFS stash."
+msgstr "Monte un coffre-fort EncFS existant."
+
+#: carp/carpcli.py:97
+msgid "Unmount a currently mounted EncFS stash."
+msgstr "Démonte un coffre-fort EncFS actuellement monté."
+
+#: carp/carpcli.py:100
+msgid "Pull a distant stash."
+msgstr "Récupère un coffre-fort distant."
+
+#: carp/carpcli.py:103
+msgid "Push a distant stash."
+msgstr "Pousse un coffre-fort distant."
+
+#: carp/carpcli.py:108
+msgid "Save the password in a file."
+msgstr "Enregistre le mot de passe dans un fichier."
+
+#: carp/carpcli.py:111
+msgid "Mount the stash after creation."
+msgstr "Monte le coffre-fort après sa création."
+
+#: carp/carpcli.py:113
+msgid "The path to an empty folder, which will become the encrypted stash."
+msgstr ""
+"Le chemin vers un dossier vide qui servira à stocker les données chiffrées."
+
+#: carp/carpcli.py:119
+msgid "What do you want to list? (default: mounted)"
+msgstr "Que voulez-vous lister ? (par défaut : mounted)"
+
+#: carp/carpcli.py:121
+msgid "Don't display stash current state (only useful for 'all' subcommand)."
+msgstr ""
+"Ne pas afficher l'état courant des coffres-forts (utile seulement pour la "
+"sous-commande 'all')."
 
 #: carp/stash_manager.py:22
 msgid "mounted"
@@ -59,12 +144,12 @@ msgstr "ATTENTION : {0} n'existe pas, nous allons donc le créer"
 msgid "{0} is not an empty dirctory. It cannot be used as a new EncFS stash."
 msgstr ""
 "{0} n'est pas un dossier vide et ne peut donc pas être utilisé comme un "
-"nouveau coffre fort EncFS."
+"nouveau coffre-fort EncFS."
 
 #: carp/stash_manager.py:168
 #, python-brace-format
 msgid "{0} is not a known stash."
-msgstr "{0} n'est pas un coffre fort connu."
+msgstr "{0} n'est pas un coffre-fort connu."
 
 #: carp/stash_manager.py:243 carp/stash_manager.py:286
 #: carp/stash_manager.py:291
@@ -100,7 +185,7 @@ msgstr "Une erreur est survenue lors de l'appel à EncFS"
 #: carp/stash_manager.py:367
 msgid "EncFS stash successfully created. Time to save new configuration."
 msgstr ""
-"Le nouveau coffre fort EncFS a été créé avec succès. Passons à sa "
+"Le nouveau coffre-fort EncFS a été créé avec succès. Passons à sa "
 "configuration."
 
 #: carp/stash_manager.py:382
@@ -117,82 +202,82 @@ msgid "Something went wrong while saving your password."
 msgstr ""
 "Une erreur est survenue lors de l'enregistrement de votre mot de passe."
 
-#: carp/stash_manager.py:461
+#: carp/stash_manager.py:471
 #, python-brace-format
 msgid "{0} already mounted."
 msgstr "{0} est déjà monté."
 
-#: carp/stash_manager.py:465
+#: carp/stash_manager.py:478
 #, python-brace-format
 msgid "{0} cannot be mounted as it is locked by another carp instance: {1}"
 msgstr ""
 "{0} ne peut pas être monté car il est verrouillé par une autre instance de "
 "carp : {1}"
 
-#: carp/stash_manager.py:468
+#: carp/stash_manager.py:481
 msgid "(DRY RUN)"
 msgstr "(ESSAI À BLANC)"
 
-#: carp/stash_manager.py:481
+#: carp/stash_manager.py:494
 #, python-brace-format
 msgid "{0} should be mounted without problem (DRY RUN)"
 msgstr "{0} devrait pouvoir être monté sans problème (ESSAI À BLANC)"
 
-#: carp/stash_manager.py:500
+#: carp/stash_manager.py:513
 #, python-brace-format
 msgid "ERROR: Impossible to create {0} remote lock."
 msgstr "ERREUR : Impossible de créer un verrou distant pour {0}."
 
-#: carp/stash_manager.py:504
+#: carp/stash_manager.py:517
 #, python-brace-format
 msgid "{0} mounted"
 msgstr "{0} monté"
 
-#: carp/stash_manager.py:513
+#: carp/stash_manager.py:526
 #, python-brace-format
 msgid "{0} not mounted."
-msgstr "{0} non monté"
+msgstr "{0} non monté."
 
-#: carp/stash_manager.py:517
+#: carp/stash_manager.py:533
 #, python-brace-format
 msgid "WARNING: {0} seems not to be remotely locked. Sync with caution."
 msgstr ""
 "ATTENTION : {0} ne semblait pas verrouillé à distance. Synchronisez le avec "
 "prudence."
 
-#: carp/stash_manager.py:523
+#: carp/stash_manager.py:539
 #, python-brace-format
 msgid "{0} should be unmounted without problem (DRY RUN)"
 msgstr "{0} devrait pouvoir être démonté sans problème (ESSAI À BLANC)"
 
-#: carp/stash_manager.py:531
+#: carp/stash_manager.py:547
 #, python-brace-format
 msgid "ERROR: Something strange happened with fusermount. {0} NOT unmounted"
 msgstr ""
 "ERREUR : Quelque chose d'inattendu s'est produit avec fusermount. {0} n'est "
 "PAS démonté"
 
-#: carp/stash_manager.py:536
+#: carp/stash_manager.py:552
 #, python-brace-format
 msgid "{0} unmounted"
 msgstr "{0} démonté"
 
-#: carp/stash_manager.py:545
+#: carp/stash_manager.py:561
 #, python-brace-format
 msgid "{0} should not be pulled while being mounted."
 msgstr "{0} ne peut pas être récupéré tant qu'il est monté."
 
-#: carp/stash_manager.py:548
+#: carp/stash_manager.py:564
 #, python-brace-format
 msgid "No remote configured for {0}"
 msgstr "Pas de configuration distante trouvée pour {0}"
 
-#: carp/stash_manager.py:553
+#: carp/stash_manager.py:569
 #, python-brace-format
 msgid "ERROR: {0} is not locked by us, but {1}"
 msgstr "ERREUR : {0} n'est pas verrouillé par nous mais par {1}"
 
-#: carp/stash_manager.py:558
+#: carp/stash_manager.py:574
 #, python-brace-format
 msgid "ERROR: Impossible to remove {0} remote lock."
 msgstr "ERREUR : Impossible de supprimer le verrou distant de {0}."
@@ -253,8 +338,8 @@ msgstr "Ouvrir dans un terminal"
 #: carp/carpgui.py:123
 msgid "An error occured while retrieving your stashes' list"
 msgstr ""
-"Une erreur est survenue lors de la récupération de votre liste de coffres "
-"fort"
+"Une erreur est survenue lors de la récupération de votre liste de coffres-"
+"forts"
 
 #: carp/carpgui.py:140
 msgid "Automatically start"
