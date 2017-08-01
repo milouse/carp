@@ -49,4 +49,4 @@ _carp_cmd_all () {
 	_arguments : "-t[Dry run]"
 }
 
-_pass
+_carp

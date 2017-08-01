@@ -14,9 +14,8 @@ function _carp() {
             ;;
         create|mount)
             COMPREPLY=( $(compgen -d $cur) )
-            #return 0
             ;;
-        *) commands="create help list mount umount" ;;
+        *) commands="create list mount umount pull push" ;;
     esac
 
     COMPREPLY=( $(compgen -o nospace -W "$commands" "$cur") )
