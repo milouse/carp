@@ -25,7 +25,7 @@ _ = gettext.gettext
 
 CARP_POSSIBLE_STATUS = {
     "mount": _("mount"),
-    "unmount": _("unmount"),
+    "umount": _("unmount"),
     "pull": _("pull"),
     "push": _("push")
 }
