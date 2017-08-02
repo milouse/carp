@@ -187,7 +187,7 @@ class CarpGui:
 
     def open_in_file_browser(self, widget, stash_name):
         target_folder = os.path.join(self.sm.mount_point(), stash_name)
-        subprocess.Popen(["xdg-open", target_folder])
+        subprocess.Popen(["gio", "open", target_folder])
 
     def open_in_term(self, widget, stash_name):
         target_folder = os.path.join(self.sm.mount_point(), stash_name)
@@ -230,7 +230,7 @@ StartupNotify=false
 
     def report_a_bug(self, widget):
         subprocess.Popen(
-            ["xdg-open",
+            ["gio", "open",
              "https://projects.deparis.io/projects/carp/issues/new"])
 
     def show_about_dialog(self, widget):
