@@ -84,7 +84,7 @@ class CarpGui:
                           mount_action, stash_name)
         mm.append(mi_button)
 
-        if is_unmounted:
+        if is_unmounted and self.sm.may_sync(stash_name):
             mi_button = Gtk.MenuItem.new_with_label(
                 _("Pull {0}").format(stash_name))
             mi_button.connect("activate", self.encfs_action,
@@ -96,7 +96,7 @@ class CarpGui:
             mi_button.connect("activate", self.encfs_action,
                               "push", stash_name)
             mm.append(mi_button)
-        else:
+        elif not is_unmounted:
             mi_button = Gtk.MenuItem.new_with_label(_("Open"))
             mi_button.connect("activate", self.open_in_file_browser,
                               stash_name)
