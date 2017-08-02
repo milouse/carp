@@ -476,13 +476,18 @@ class StashManager:
             self.stashes[stash_name]["nosync"] = True
 
         if self.may_sync(stash_name) and self.is_locked(stash_name):
-            err_mess = _("{0} cannot be mounted as it is locked by "
-                         "another carp instance: {1}")
-            if test_run:
-                err_mess += " " + _("(DRY RUN)")
+            loc_machine = os.uname().nodename
+            if len(self.locked_by) == 1 and self.locked_by[0] == loc_machine:
+                print(_("{0} is already locked by this current machine ({1})")
+                      .format(stash_name, loc_machine))
+            else:
+                err_mess = _("{0} cannot be mounted as it is locked by "
+                             "another carp instance: {1}")
+                if test_run:
+                    err_mess += " " + _("(DRY RUN)")
 
-            print(err_mess.format(stash_name, ", ".join(self.locked_by)))
-            return False
+                print(err_mess.format(stash_name, ", ".join(self.locked_by)))
+                return False
 
         loc_stash = self.stashes[stash_name]
         final_mount_point = self.check_dir(
