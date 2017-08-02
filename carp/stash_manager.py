@@ -97,7 +97,8 @@ class StashManager:
         os.chmod(config_file, 0o600)
 
         remote_path = None
-        if "remote_path" in self.config[stash_name]:
+        if "remote_path" in self.config[stash_name] and \
+           "nosync" not in self.config[stash_name]:
             remote_path = self.config[stash_name]["remote_path"]
 
         final_encfs_root = os.path.join(self.encfs_root(), stash_name)
