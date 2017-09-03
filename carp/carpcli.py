@@ -132,38 +132,31 @@ For exemple: %(prog)s create --help
         if self.command not in subparsers.choices.keys():
             self.die(parser.format_help())
 
-        self.options = getattr(self, self.command)(args)
+        if self.command == "list":
+            self.options = self.list_opts(args)
+        elif self.command == "create":
+            self.options = self.create_opts(args)
+        else:
+            self.options = self.default_stash_opts(args)
         self.options["config"] = args.config
 
-    def list(self, opts):
+    def list_opts(self, opts):
         return {
             "state": opts.state,
             "raw": opts.raw
         }
 
-    def get_stash(self, opts):
-        return {
-            "stash": opts.stash,
-            "test": opts.test
-        }
-
-    def pull(self, opts):
-        return self.get_stash(opts)
-
-    def push(self, opts):
-        return self.get_stash(opts)
-
-    def mount(self, opts):
-        return self.get_stash(opts)
-
-    def umount(self, opts):
-        return self.get_stash(opts)
-
-    def create(self, opts):
+    def create_opts(self, opts):
         return {
             "rootdir": opts.rootdir,
             "mount": opts.mount,
             "save_pass": opts.save_pass
+        }
+
+    def default_stash_opts(self, opts):
+        return {
+            "stash": opts.stash,
+            "test": opts.test
         }
 
     def run(self, carp, can_exit=True):
