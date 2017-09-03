@@ -5,8 +5,10 @@ import re
 import sys
 import time
 import shutil
+import getpass
 import subprocess
-from getpass import getpass
+import inotify.adapters
+from datetime import datetime
 from configparser import ConfigParser
 from xdg.BaseDirectory import xdg_config_home
 
@@ -20,6 +22,13 @@ _ = gettext.gettext
 CARP_STASH_POSSIBLE_STATUS = {
     "-": "-",  # if it works it ain't stupid
     "mounted": _("mounted")
+}
+
+CARP_POSSIBLE_INOTIFY_STATUS = {
+    "IN_CREATE": _("{} created"),
+    "IN_DELETE": _("{} deleted"),
+    "IN_MODIFY": _("{} modified"),
+    "IN_MOVED": _("{} moved")
 }
 
 
@@ -60,8 +69,6 @@ class StashManager:
         self.config["general"]["mount_point"] = self.mount_point()
         self._encfs_root = None
         self.config["general"]["encfs_root"] = self.encfs_root()
-
-        self.locked_by = []
 
         self.write_config()
         self.reload_stashes()
@@ -163,6 +170,13 @@ class StashManager:
     def write_config(self):
         with open(self.config_file, "w") as f:
             self.config.write(f)
+
+    def log_activity(self, stash_name, activity):
+        config_dir = os.path.join(xdg_config_home, ".carp", stash_name)
+        log_file = os.path.join(config_dir, "activity.log")
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        with open(log_file, "a") as f:
+            f.write("[{0}] {1}\n".format(now, activity))
 
     def valid_stash(self, stash_name):
         if stash_name not in self.stashes.keys():
@@ -383,7 +397,7 @@ class StashManager:
             print(_("Please enter your password a last time in order "
                     "to save it in your home folder. Leave it blank "
                     "and press enter if you changed your mind."))
-            loc_password = getpass("Password > ")
+            loc_password = getpass.getpass("Password > ")
             loc_dest = input("gpg key id > ")
             if loc_password != "":
                 cmd = subprocess.Popen(
@@ -414,55 +428,64 @@ class StashManager:
             return False
         return True
 
-    def ssh_command(self, stash_name, action="ls"):
-        if not self.may_sync(stash_name):
-            return None
+    def handle_inotify_event(self, event, stash_name):
+        (_, type_names, watch_path, filename) = event
 
-        ssh_parts = self.stashes[stash_name]["remote_path"].split(":")
-        if len(ssh_parts) != 2:
-            return None
+        main_activity = None
+        if "IN_UNMOUNT" in type_names:
+            return 0
+        elif "IN_CREATE" in type_names:
+            main_activity = "IN_CREATE"
+        elif "IN_DELETE" in type_names or "IN_DELETE_SELF" in type_names:
+            main_activity = "IN_DELETE"
+        elif "IN_MODIFY" in type_names or "IN_CLOSE_WRITE" in type_names:
+            main_activity = "IN_MODIFY"
+        elif "IN_MOVED_FROM" in type_names or "IN_MOVED_TO" in type_names or \
+             "IN_MOVE_SELF" in type_names:
+            main_activity = "IN_MOVED"
+        else:
+            return 2
 
-        lock_file = "lock*"
-        if action != "ls":
-            lock_file = "lock.{}".format(os.uname().nodename)
+        message = CARP_POSSIBLE_INOTIFY_STATUS[main_activity].format(
+            os.path.join(watch_path, filename).decode("utf-8"))
+        self.log_activity(stash_name, message)
+        return 1
 
-        return ["ssh", ssh_parts[0], action,
-                os.path.join(ssh_parts[1], lock_file)]
+    def inotify_push_stash(self, stash_name):
+        cmd = subprocess.run(["pgrep", "-u", getpass.getuser(), "rsync"])
+        if cmd.returncode == 0:
+            self.log_activity(stash_name, "Sync already running")
+            return True
 
-    def is_locked(self, stash_name):
-        ssh_cmd = self.ssh_command(stash_name)
-        if not ssh_cmd:
-            return False
+        self.log_activity(stash_name, "Will sync NOW")
+        self.push({"stash": stash_name, "test": False, "quiet": True})
+        return False
 
-        try:
-            cmd = subprocess.run(ssh_cmd, check=True,
-                                 stdout=subprocess.PIPE,
-                                 stderr=subprocess.DEVNULL)
-        except subprocess.CalledProcessError:
-            return False
+    def inotify_loop(self, stash_name, stash_mount_point):
+        i = inotify.adapters.InotifyTree(stash_mount_point.encode("utf-8"))
 
-        self.locked_by = [re.sub(r"^.*/lock\.(.+)$", "\\1", lock_name)
-                          for lock_name in cmd.stdout.decode().split()]
+        must_sync = False
+        sync_wait = 10
 
-        return True
+        # And see the corresponding events:
+        for event in i.event_gen():
+            if sync_wait == 0:
+                sync_wait = 10
+                if must_sync:
+                    must_sync = self.inotify_push_stash(stash_name)
+            else:
+                sync_wait -= 1
 
-    def create_lock(self, stash_name):
-        ssh_cmd = self.ssh_command(stash_name, "touch")
-        if not ssh_cmd:
-            return False
+            if event is None:
+                continue
 
-        subprocess.run(ssh_cmd)
+            must_continue = self.handle_inotify_event(event, stash_name)
+            if must_continue == 0:
+                break
+            elif must_continue == 1:
+                must_sync = True
 
-        return self.is_locked(stash_name)
-
-    def remove_lock(self, stash_name):
-        ssh_cmd = self.ssh_command(stash_name, "rm")
-        if not ssh_cmd:
-            return False
-
-        subprocess.run(ssh_cmd, stderr=subprocess.DEVNULL)
-
-        return not self.is_locked(stash_name)
+        self.log_activity(stash_name, "Killing inotify daemon")
 
     def mount(self, opts):
         test_run = "test" in opts and opts["test"]
@@ -471,23 +494,8 @@ class StashManager:
         if stash_name in self.mounted_stashes():
             raise CarpMountError(_("{0} already mounted."
                                  .format(stash_name)))
-
         if "nosync" in opts:
             self.stashes[stash_name]["nosync"] = True
-
-        if self.may_sync(stash_name) and self.is_locked(stash_name):
-            loc_machine = os.uname().nodename
-            if len(self.locked_by) == 1 and self.locked_by[0] == loc_machine:
-                print(_("{0} is already locked by this current machine ({1})")
-                      .format(stash_name, loc_machine))
-            else:
-                err_mess = _("{0} cannot be mounted as it is locked by "
-                             "another carp instance: {1}")
-                if test_run:
-                    err_mess += " " + _("(DRY RUN)")
-
-                print(err_mess.format(stash_name, ", ".join(self.locked_by)))
-                return False
 
         loc_stash = self.stashes[stash_name]
         stash_mount_point = self.check_dir(
@@ -515,12 +523,16 @@ class StashManager:
             print("{0} NOT mounted".format(stash_mount_point))
             return False
 
-        if self.may_sync(stash_name) and not self.create_lock(stash_name):
-            print(_("ERROR: Impossible to create {0} remote lock.")
-                  .format(stash_name))
-            return False
+        print(_("{0} mounted").format(stash_mount_point))
 
-        print(_("{0} mounted").format(final_mount_point))
+        if test_run or not self.may_sync(stash_name):
+            # If we don't have to sync, quit early
+            return True
+
+        newpid = os.fork()
+        if newpid == 0:
+            # Child process, begin loop
+            self.inotify_loop(stash_name, stash_mount_point)
 
         return True
 
@@ -531,13 +543,8 @@ class StashManager:
         if stash_name in self.unmounted_stashes():
             raise CarpMountError(_("{0} not mounted.")
                                  .format(stash_name))
-
         if "nosync" in opts:
             self.stashes[stash_name]["nosync"] = True
-
-        if self.may_sync(stash_name) and not self.is_locked(stash_name):
-            print(_("WARNING: {0} seems not to be remotely locked. "
-                    "Sync with caution.").format(stash_name))
 
         stash_mount_point = os.path.join(self.mount_point(), stash_name)
 
@@ -557,29 +564,21 @@ class StashManager:
 
         print(_("{0} unmounted").format(stash_mount_point))
 
+        if self.may_sync(stash_name):
+            self.log_activity(stash_name, "Will sync NOW")
+            self.push({"stash": stash_name, "test": False})
         return True
 
     def rsync(self, opts, direction="pull"):
         stash_name = opts["stash"]
         self.valid_stash(stash_name)
-        if stash_name in self.mounted_stashes():
+        if direction == "pull" and stash_name in self.mounted_stashes():
             raise CarpMountError(
                 _("{0} should not be pulled while being mounted.")
                 .format(stash_name))
         if not self.stashes[stash_name]["remote_path"]:
             raise CarpNoRemoteError(_("No remote configured for {0}")
                                     .format(stash_name))
-
-        if direction == "push" and self.is_locked(stash_name):
-            if os.uname().nodename not in self.locked_by:
-                print(_("ERROR: {0} is not locked by us, but {1}")
-                      .format(stash_name, ", ".join(self.locked_by)))
-                return False
-
-            if not self.remove_lock(stash_name):
-                print(_("ERROR: Impossible to remove {0} remote lock.")
-                      .format(stash_name))
-                return False
 
         av_opt = "-av"
         if "test" in opts and opts["test"]:
@@ -604,7 +603,10 @@ class StashManager:
 
         print(" ".join(rsync_cmd))
 
-        cmd = subprocess.run(rsync_cmd)
+        err_output = None  # Default
+        if "quiet" in opts and opts["quiet"] is True:
+            err_output = subprocess.DEVNULL
+        cmd = subprocess.run(rsync_cmd, stderr=err_output)
         if cmd.returncode != 0:
             return False
         return True

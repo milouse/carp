@@ -40,7 +40,7 @@ always be mounted under /~/Private/.
 
 ** CREATE OPTIONS
 
- - -m :: Automount your new encfs folder after creation
+ - -m :: Automount your new encfs folder after creation.
  - -s :: Save your password in your home folder to avoid typing it when
       mounting your secret folder.
  - /rootdir/ :: The path to your future encrypted stash. This path MUST
@@ -48,7 +48,7 @@ always be mounted under /~/Private/.
 
 ** MOUNT, UMOUNT OPTIONS
 
- - -n :: Do not try to create or check the remote lock.
+ - -n :: Ignore sync feature.
 
 ** MOUNT, UMOUNT, PULL AND PUSH OPTIONS
 

@@ -80,7 +80,7 @@ For exemple: %(prog)s create --help
         sync_parser = ArgumentParser(add_help=False)
         sync_parser.add_argument("-n", "--nosync",
                                  action="store_true",
-                                 help=_("Disable lock creation/check."))
+                                 help=_("Ignore sync feature."))
 
         subparsers = parser.add_subparsers(
             dest="command", title=_("Commands"), help=None,
