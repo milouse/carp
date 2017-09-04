@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+import re
 import sys
 import signal
 import subprocess
@@ -33,6 +34,8 @@ CARP_POSSIBLE_STATUS = {
 
 class CarpGui:
     def __init__(self):
+        self.activity_re = re.compile("^\[([0-9\s:-]+)\] (.+) "
+                                      "(created|deleted|modified|moved)$")
         self.parse_args()
         self.sm = StashManager(self.config_file)
         Notify.init("Carp")
@@ -65,6 +68,37 @@ class CarpGui:
         if args.config:
             self.config_file = os.path.expanduser(args.config)
 
+    def build_activity_submenu(self, log_file):
+        file_lines = []
+        with open(log_file, "r") as f:
+            file_lines = f.readlines()
+
+        modified_files = []
+        last_line = None
+        for line in file_lines:
+            match = self.activity_re.match(line)
+            if match is None:
+                continue
+            new_line = "{}{}".format(match[2], match[3])
+            if new_line == last_line:
+                continue
+            last_line = new_line
+            modified_files.append((match[1], match[2], match[3]))
+
+        modified_files = modified_files[-10:]
+        lfmenu = Gtk.Menu()
+        for line in modified_files:
+            lb = Gtk.MenuItem.new_with_label(
+                _("{} ({} at {})").format(line[1], line[2], line[0]))
+            if line[2] == 'deleted':
+                lb.set_sensitive(False)
+            else:
+                lb.connect("activate", self.open_in_file_browser,
+                           line[1], True)
+            lfmenu.append(lb)
+
+        return lfmenu
+
     def build_stash_submenu(self, stash_name, is_unmounted=True):
         mm = Gtk.Menu()
 
@@ -78,6 +112,17 @@ class CarpGui:
         if is_unmounted:
             mount_label = _("Mount {0}").format(stash_name)
             mount_action = "mount"
+        else:
+            config_dir = os.path.join(xdg_config_home, ".carp", stash_name)
+            log_file = os.path.join(config_dir, "activity.log")
+
+            lfmb = Gtk.MenuItem.new_with_label(_("Last changes"))
+            if os.path.exists(log_file):
+                lfmenu = self.build_activity_submenu(log_file)
+                lfmb.set_submenu(lfmenu)
+            else:
+                lfmb.set_sensitive(False)
+            mm.append(lfmb)
 
         mi_button = Gtk.MenuItem.new_with_label(mount_label)
         mi_button.connect("activate", self.encfs_action,
@@ -185,8 +230,13 @@ class CarpGui:
                         .format(stash_name, CARP_POSSIBLE_STATUS[action]),
                         Notify.Urgency.CRITICAL)
 
-    def open_in_file_browser(self, widget, stash_name):
-        target_folder = os.path.join(self.sm.mount_point(), stash_name)
+    def open_in_file_browser(self, widget, stash_name_or_path,
+                             absolute_path=False):
+        if absolute_path:
+            target_folder = stash_name_or_path
+        else:
+            target_folder = os.path.join(self.sm.mount_point(),
+                                         stash_name_or_path)
         subprocess.Popen(["gio", "open", target_folder])
 
     def open_in_term(self, widget, stash_name):
