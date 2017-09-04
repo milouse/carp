@@ -178,6 +178,16 @@ class StashManager:
         with open(log_file, "a") as f:
             f.write("[{0}] {1}\n".format(now, activity))
 
+        rotate_file = False
+        with open(log_file, "r") as f:
+            all_lines_count = sum(1 for _ in f)
+            if all_lines_count > 500:
+                rotate_file = True
+
+        if rotate_file:
+            shutil.copyfile(log_file, log_file + ".1")
+            os.truncate(log_file, 0)
+
     def valid_stash(self, stash_name):
         if stash_name not in self.stashes.keys():
             raise CarpNotAStashError(_("{0} is not a known stash.")
