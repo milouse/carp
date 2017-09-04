@@ -89,7 +89,7 @@ class CarpGui:
         lfmenu = Gtk.Menu()
         for line in modified_files:
             lb = Gtk.MenuItem.new_with_label(
-                _("{} ({} at {})").format(line[1], line[2], line[0]))
+                _("{0} ({1} at {2})").format(line[1], line[2], line[0]))
             if line[2] == 'deleted':
                 lb.set_sensitive(False)
             else:

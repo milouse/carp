@@ -25,10 +25,10 @@ CARP_STASH_POSSIBLE_STATUS = {
 }
 
 CARP_POSSIBLE_INOTIFY_STATUS = {
-    "IN_CREATE": _("{} created"),
-    "IN_DELETE": _("{} deleted"),
-    "IN_MODIFY": _("{} modified"),
-    "IN_MOVED": _("{} moved")
+    "IN_CREATE": _("{0} created"),
+    "IN_DELETE": _("{0} deleted"),
+    "IN_MODIFY": _("{0} modified"),
+    "IN_MOVED": _("{0} moved")
 }
 
 
