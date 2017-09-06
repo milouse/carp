@@ -614,12 +614,12 @@ class StashManager:
             rsync_cmd.append(stash_remote_path)
             rsync_cmd.append(stash_encfs_root)
 
-        print(" ".join(rsync_cmd))
-
-        err_output = None  # Default
         if "quiet" in opts and opts["quiet"] is True:
-            err_output = subprocess.DEVNULL
-        cmd = subprocess.run(rsync_cmd, stderr=err_output)
+            rsync_cmd.insert(1, "-q")
+        else:
+            print(" ".join(rsync_cmd))
+
+        cmd = subprocess.run(rsync_cmd)
         if cmd.returncode != 0:
             return False
         return True
