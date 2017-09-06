@@ -31,6 +31,13 @@ CARP_POSSIBLE_STATUS = {
     "push": _("push")
 }
 
+CARP_POSSIBLE_INOTIFY_STATUS = {
+    "created": _("created"),
+    "deleted": _("deleted"),
+    "modified": _("modified"),
+    "moved": _("moved")
+}
+
 
 class CarpGui:
     def __init__(self):
@@ -88,8 +95,9 @@ class CarpGui:
         modified_files = modified_files[-10:]
         lfmenu = Gtk.Menu()
         for line in modified_files:
+            istatus = CARP_POSSIBLE_INOTIFY_STATUS[line[2]]
             lb = Gtk.MenuItem.new_with_label(
-                _("{0} ({1} at {2})").format(line[1], line[2], line[0]))
+                _("{0} ({1} at {2})").format(line[1], istatus, line[0]))
             if line[2] == 'deleted':
                 lb.set_sensitive(False)
             else:

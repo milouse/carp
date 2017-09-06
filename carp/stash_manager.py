@@ -25,10 +25,10 @@ CARP_STASH_POSSIBLE_STATUS = {
 }
 
 CARP_POSSIBLE_INOTIFY_STATUS = {
-    "IN_CREATE": _("{0} created"),
-    "IN_DELETE": _("{0} deleted"),
-    "IN_MODIFY": _("{0} modified"),
-    "IN_MOVED": _("{0} moved")
+    "IN_CREATE": "created",
+    "IN_DELETE": "deleted",
+    "IN_MODIFY": "modified",
+    "IN_MOVED": "moved"
 }
 
 
@@ -456,8 +456,10 @@ class StashManager:
         else:
             return 2
 
-        message = CARP_POSSIBLE_INOTIFY_STATUS[main_activity].format(
-            os.path.join(watch_path, filename).decode("utf-8"))
+        message = "{} {}".format(
+            os.path.join(watch_path, filename).decode("utf-8"),
+            CARP_POSSIBLE_INOTIFY_STATUS[main_activity]
+        )
         self.log_activity(stash_name, message)
         return 1
 
