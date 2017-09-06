@@ -92,6 +92,9 @@ class CarpGui:
             last_line = new_line
             modified_files.append((match[1], match[2], match[3]))
 
+        if len(modified_files) == 0:
+            return None
+
         modified_files = modified_files[-10:]
         lfmenu = Gtk.Menu()
         for line in modified_files:
@@ -125,11 +128,13 @@ class CarpGui:
             log_file = os.path.join(config_dir, "activity.log")
 
             lfmb = Gtk.MenuItem.new_with_label(_("Last changes"))
+            lfmb.set_sensitive(False)
             if os.path.exists(log_file):
                 lfmenu = self.build_activity_submenu(log_file)
-                lfmb.set_submenu(lfmenu)
-            else:
-                lfmb.set_sensitive(False)
+                if lfmenu is not None:
+                    lfmb.set_sensitive(True)
+                    lfmb.set_submenu(lfmenu)
+
             mm.append(lfmb)
 
         mi_button = Gtk.MenuItem.new_with_label(mount_label)
