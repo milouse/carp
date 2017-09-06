@@ -462,7 +462,8 @@ class StashManager:
         return 1
 
     def inotify_push_stash(self, stash_name):
-        cmd = subprocess.run(["pgrep", "-u", getpass.getuser(), "rsync"])
+        cmd = subprocess.run(["pgrep", "-u", getpass.getuser(), "rsync"],
+                             stdout=subprocess.DEVNULL)
         if cmd.returncode == 0:
             self.log_activity(stash_name, "Sync already running")
             return True
