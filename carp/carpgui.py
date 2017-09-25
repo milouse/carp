@@ -43,6 +43,8 @@ class CarpGui:
     def __init__(self):
         self.activity_re = re.compile("^\[([0-9\s:-]+)\] (.+) "
                                       "(created|deleted|modified|moved)$")
+        self.lock_re = re.compile("(?:^\.~.+#|.+~$|.+\.lock$|"
+                                  ".+~\.[A-Z0-9]{6}$)")
         self.parse_args()
         self.sm = StashManager(self.config_file)
         Notify.init("Carp")
@@ -85,6 +87,9 @@ class CarpGui:
         for line in file_lines:
             match = self.activity_re.match(line)
             if match is None:
+                continue
+            concerned_file = os.path.basename(match[2])
+            if self.lock_re.search(concerned_file) is not None:
                 continue
             new_line = "{}{}".format(match[2], match[3])
             if new_line == last_line:
