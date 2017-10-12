@@ -40,6 +40,8 @@ install: build
 	install -D -m644 dist/$(PKGNAME)-completions	$(DEST)/share/bash-completion/completions/$(PKGNAME)
 	install -D -m644 dist/_$(PKGNAME)		$(DEST)/share/zsh/site-functions/_$(PKGNAME)
 
+	install -D -m644 carp_icon.svg			$(DEST)/share/icons/hicolor/scalable/apps/carp.svg
+
 	for lang in $(L10N) ; do \
 	  install -d -m755 $(DEST)/share/locale/$$lang/LC_MESSAGES ; \
 	  install -D -m644 locales/$$lang/LC_MESSAGES/$(PKGNAME).mo $(DEST)/share/locale/$$lang/LC_MESSAGES/$(PKGNAME).mo ; \
@@ -57,6 +59,8 @@ uninstall:
 	rm $(DEST)/share/man/man5/$(PKGNAME).conf.5.gz
 	rm $(DEST)/share/bash-completion/completions/$(PKGNAME)
 	rm $(DEST)/share/zsh/site-functions/_$(PKGNAME)
+
+	rm $(DEST)/share/icons/hicolor/scalable/apps/carp.svg
 
 	for lang in $(L10N) ; do \
 	  rm $(DEST)/share/locale/$$lang/LC_MESSAGES/carp.mo ; \

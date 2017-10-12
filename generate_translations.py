@@ -46,7 +46,7 @@ def generate_desktop_file():
 
         lnfile.write("""\
 Exec=carp gui
-Icon=folder_locked
+Icon=carp
 Terminal=false
 Type=Application
 Categories=Network;

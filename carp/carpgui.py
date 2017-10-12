@@ -15,7 +15,9 @@ from xdg.BaseDirectory import xdg_config_home
 import gi
 gi.require_version('Gtk', '3.0')  # noqa: E402
 gi.require_version("Notify", "0.7")  # noqa: E402
-from gi.repository import Gtk, GLib, Notify
+gi.require_version("GdkPixbuf", "2.0")  # noqa: E402
+from gi.repository import Gtk, GLib, Notify, GdkPixbuf
+
 
 import gettext
 CARP_L10N_PATH = "./locales"
@@ -58,7 +60,7 @@ class CarpGui:
             xdg_config_home, "autostart", "carp.desktop"))
 
         self.tray = Gtk.StatusIcon()
-        self.tray.set_from_icon_name("folder_locked")
+        self.tray.set_from_icon_name("carp")
         self.tray.set_tooltip_text("Carp")
         self.tray.connect("popup-menu", self.display_menu)
 
@@ -289,7 +291,7 @@ Name={}
 GenericName={}
 Comment={}
 Exec=carp gui
-Icon=folder_locked
+Icon=carp
 Terminal=false
 Type=Application
 X-MATE-Autostart-enabled=true
@@ -309,13 +311,21 @@ StartupNotify=false
     def show_about_dialog(self, widget):
         about_dialog = Gtk.AboutDialog()
         about_dialog.set_destroy_with_parent(True)
-        about_dialog.set_icon_name("folder_locked")
+        about_dialog.set_icon_name("carp")
         about_dialog.set_name(_("Carp"))
         about_dialog.set_website("https://projects.deparis.io/projects/carp/")
         about_dialog.set_comments(_("EncFS GUI managing tool"))
         about_dialog.set_version(VERSION)
         about_dialog.set_copyright(_("Carp is released under the WTFPL"))
         about_dialog.set_authors(["Étienne Deparis <etienne@depar.is>"])
+
+        # Logo is made from:
+        # https://openclipart.org/detail/177619/koinobori-grey
+        # https://openclipart.org/detail/204475/bouclier
+        about_dialog.set_logo(
+            GdkPixbuf.Pixbuf.new_from_file_at_scale(
+                "/usr/share/icons/hicolor/scalable/apps/carp.svg",
+                128, 128, True))
         about_dialog.run()
         about_dialog.destroy()
 
