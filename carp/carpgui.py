@@ -43,10 +43,15 @@ class CarpGui:
     def __init__(self):
         self.activity_re = re.compile("^\[([0-9\s:-]+)\] (.+) "
                                       "(created|deleted|modified|moved)$")
-        self.lock_re = re.compile("(?:^\.~.+#|.+~$|.+\.lock$|"
-                                  ".+~\.[A-Z0-9]{6}$)")
         self.parse_args()
         self.sm = StashManager(self.config_file)
+
+        hide_file_pattern = "(?:^\.~.+\#|^\.\#|~$|\.lock$|~\.[A-Z0-9]{6}$)"
+        if "general" in self.sm.config and \
+           "hide_file_pattern" in self.sm.config["general"]:
+            hide_file_pattern = self.sm.config["general"]["hide_file_pattern"]
+        self.lock_re = re.compile(hide_file_pattern)
+
         Notify.init("Carp")
 
         self.must_autostart = os.path.isfile(os.path.join(
