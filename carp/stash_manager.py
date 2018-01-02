@@ -457,7 +457,7 @@ class StashManager:
             return 2
 
         message = "{} {}".format(
-            os.path.join(watch_path, filename).decode("utf-8"),
+            os.path.join(watch_path, filename),
             CARP_POSSIBLE_INOTIFY_STATUS[main_activity]
         )
         self.log_activity(stash_name, message)
@@ -475,7 +475,7 @@ class StashManager:
         return False
 
     def inotify_loop(self, stash_name, stash_mount_point):
-        i = inotify.adapters.InotifyTree(stash_mount_point.encode("utf-8"))
+        i = inotify.adapters.InotifyTree(stash_mount_point)
 
         must_sync = False
         sync_wait = 10
