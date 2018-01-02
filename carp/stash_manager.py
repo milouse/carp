@@ -481,7 +481,7 @@ class StashManager:
         sync_wait = 10
 
         # And see the corresponding events:
-        for event in i.event_gen():
+        for event in i.event_gen(terminal_events=('IN_Q_OVERFLOW')):
             if sync_wait == 0:
                 sync_wait = 10
                 if must_sync:
