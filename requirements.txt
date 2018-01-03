@@ -1,4 +1,4 @@
 gobject
-inotify
+inotify >= 0.2.9
 setuptools
 xdg
