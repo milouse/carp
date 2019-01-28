@@ -2,21 +2,21 @@
 # Copyright (C) 2017 Carp volunteers
 # This file is distributed under the same license as the Carp package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-# 
-#, fuzzy
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: Carp 0.7.0\n"
 "Report-Msgid-Bugs-To: bugs@depar.is\n"
 "POT-Creation-Date: 2017-09-06 21:09+0200\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: Étienne Deparis <etienne@depar.is>, 2017\n"
+"PO-Revision-Date: 2019-01-28 11:23+0100\n"
+"Last-Translator: Étienne Deparis <etienne@depar.is>\n"
 "Language-Team: French (https://www.transifex.com/carp/teams/78408/fr/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Language: fr\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Generator: Poedit 2.2\n"
 
 #: carp/carpcli.py:29
 msgid "WTF command not recognized!"
@@ -360,4 +360,4 @@ msgstr "Gestionnaire EncFS"
 
 #: carp/carpgui.py:307
 msgid "Carp is released under the WTFPL"
-msgstr "Carp est disponible selon les termes de la WTFPL"
+msgstr "Carp est publié selon les termes de la WTFPL"
