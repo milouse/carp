@@ -1,18 +1,16 @@
-#!/usr/bin/env python3
-
 import os
 import sys
 from carp.stash_manager import StashManager, CarpNotAStashError, \
     CarpMountError, CarpNoRemoteError, CarpNotEmptyDirectoryError, \
     CarpSubcommandError, CarpMustBePushedError
-from carp.version import VERSION
+from carp import __version__
 from xdg.BaseDirectory import xdg_config_home
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 
 import gettext
-CARP_L10N_PATH = "./locales"
-# Explicit declaration to avoid flake8 fear.
-gettext.bindtextdomain("carp", CARP_L10N_PATH)
+# Uncomment the following line during development.
+# Please, be cautious to NOT commit the following line uncommented.
+# gettext.bindtextdomain("carp", "./locales")
 gettext.textdomain("carp")
 _ = gettext.gettext
 
@@ -49,6 +47,7 @@ class CarpCli:
 
         else:
             self.run(carp)
+        sys.exit(0)
 
     def die(self, msg, error_code=1):
         print(msg, file=sys.stderr)
@@ -124,7 +123,7 @@ For exemple: %(prog)s create --help
         args = parser.parse_args()
 
         if args.version:
-            print("{} - v{}".format(carp_desc, VERSION))
+            print("{} - v{}".format(carp_desc, __version__))
             sys.exit(0)
 
         self.command = args.command

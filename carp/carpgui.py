@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import os
 import re
 import sys
@@ -9,7 +7,7 @@ from argparse import ArgumentParser, RawDescriptionHelpFormatter
 from carp.stash_manager import StashManager, CarpNotAStashError, \
     CarpMountError, CarpNoRemoteError, CarpNotEmptyDirectoryError, \
     CarpMustBePushedError
-from carp.version import VERSION
+from carp import __version__
 from xdg.BaseDirectory import xdg_config_home
 
 import gi
@@ -20,9 +18,9 @@ from gi.repository import Gtk, GLib, Notify, GdkPixbuf
 
 
 import gettext
-CARP_L10N_PATH = "./locales"
-# Explicit declaration to avoid flake8 fear.
-gettext.bindtextdomain("carp", CARP_L10N_PATH)
+# Uncomment the following line during development.
+# Please, be cautious to NOT commit the following line uncommented.
+# gettext.bindtextdomain("carp", "./locales")
 gettext.textdomain("carp")
 _ = gettext.gettext
 
@@ -43,12 +41,12 @@ CARP_POSSIBLE_INOTIFY_STATUS = {
 
 class CarpGui:
     def __init__(self):
-        self.activity_re = re.compile("^\[([0-9\s:-]+)\] (.+) "
+        self.activity_re = re.compile(r"^\[([0-9\s:-]+)\] (.+) "
                                       "(created|deleted|modified|moved)$")
         self.parse_args()
         self.sm = StashManager(self.config_file)
 
-        hide_file_pattern = "(?:^\.~.+\#|^\.\#|~$|\.lock$|~\.[A-Z0-9]{6}$)"
+        hide_file_pattern = r"(?:^\.~.+\#|^\.\#|~$|\.lock$|~\.[A-Z0-9]{6}$)"
         if "general" in self.sm.config and \
            "hide_file_pattern" in self.sm.config["general"]:
             hide_file_pattern = self.sm.config["general"]["hide_file_pattern"]
@@ -77,7 +75,7 @@ class CarpGui:
         args = parser.parse_args()
 
         if args.version:
-            print("{} - v{}".format(carp_desc, VERSION))
+            print("{} - v{}".format(carp_desc, __version__))
             sys.exit(0)
 
         self.config_file = os.path.join(xdg_config_home, ".carp", "carp.conf")
@@ -315,7 +313,7 @@ StartupNotify=false
         about_dialog.set_name(_("Carp"))
         about_dialog.set_website("https://projects.deparis.io/projects/carp/")
         about_dialog.set_comments(_("EncFS GUI managing tool"))
-        about_dialog.set_version(VERSION)
+        about_dialog.set_version(__version__)
         about_dialog.set_copyright(_("Carp is released under the WTFPL"))
         about_dialog.set_authors(["Étienne Deparis <etienne@depar.is>"])
 
@@ -333,8 +331,7 @@ StartupNotify=false
         Gtk.main_quit()
 
 
-if __name__ == "__main__":
-
+def run_icon():
     # Install signal handlers
     GLib.unix_signal_add(GLib.PRIORITY_DEFAULT, signal.SIGTERM,
                          Gtk.main_quit, None)
@@ -343,3 +340,7 @@ if __name__ == "__main__":
 
     CarpGui()
     Gtk.main()
+
+
+if __name__ == "__main__":
+    run_icon()

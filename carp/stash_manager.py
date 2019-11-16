@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import os
 import re
 import sys
@@ -13,9 +11,9 @@ from configparser import ConfigParser
 from xdg.BaseDirectory import xdg_config_home
 
 import gettext
-CARP_L10N_PATH = "./locales"
-# Explicit declaration to avoid flake8 fear.
-gettext.bindtextdomain("carp", CARP_L10N_PATH)
+# Uncomment the following line during development.
+# Please, be cautious to NOT commit the following line uncommented.
+# gettext.bindtextdomain("carp", "./locales")
 gettext.textdomain("carp")
 _ = gettext.gettext
 

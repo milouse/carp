@@ -1,4 +1,5 @@
-gobject
-inotify >= 0.2.9
-setuptools
-xdg
+vext
+
+# installs dependencies from ./setup.py, and the package itself,
+# in editable mode
+-e .
