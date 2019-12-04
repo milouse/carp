@@ -124,11 +124,11 @@ class StashManager:
                 "encfs_root": stash_encfs_root}
 
     def stash_config_path(self, stash_name):
+        default = os.path.join(xdg_config_home, "carp", stash_name)
+        if stash_name not in self.config:
+            return default
         return self.check_and_clean_dir_path(
-            self.config.get(stash_name, {}).get(
-                "config_path",
-                os.path.join(xdg_config_home, "carp", stash_name)
-            )
+            self.config[stash_name].get("config_path", default)
         )
 
     def check_and_clean_dir_path(self, path, check_if_empty=False):
