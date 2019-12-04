@@ -7,7 +7,7 @@ from argparse import ArgumentParser, RawDescriptionHelpFormatter
 from carp.stash_manager import StashManager, CarpNotAStashError, \
     CarpMountError, CarpNoRemoteError, CarpNotEmptyDirectoryError, \
     CarpMustBePushedError
-from carp import __version__
+from carp import __version__, __description__, __generic_name__
 from xdg.BaseDirectory import xdg_config_home
 
 import gi
@@ -41,15 +41,16 @@ CARP_POSSIBLE_INOTIFY_STATUS = {
 
 class CarpGui:
     def __init__(self):
-        self.activity_re = re.compile(r"^\[([0-9\s:-]+)\] (.+) "
-                                      "(created|deleted|modified|moved)$")
+        self.activity_re = re.compile(
+            r"^\[([0-9\s:-]+)\] (.+) (created|deleted|modified|moved)$"
+        )
         self.parse_args()
         self.sm = StashManager(self.config_file)
 
-        hide_file_pattern = r"(?:^\.~.+\#|^\.\#|~$|\.lock$|~\.[A-Z0-9]{6}$)"
-        if "general" in self.sm.config and \
-           "hide_file_pattern" in self.sm.config["general"]:
-            hide_file_pattern = self.sm.config["general"]["hide_file_pattern"]
+        hide_file_pattern = self.sm.config["general"].get(
+            "hide_file_pattern",
+            r"(?:^\.~.+\#|^\.\#|~$|\.lock$|~\.[A-Z0-9]{6}$)"
+        )
         self.lock_re = re.compile(hide_file_pattern)
 
         Notify.init("Carp")
@@ -63,9 +64,8 @@ class CarpGui:
         self.tray.connect("popup-menu", self.display_menu)
 
     def parse_args(self):
-        carp_desc = _("EncFS GUI managing tool")
         parser = ArgumentParser(
-            description=carp_desc,
+            description=_(__description__),
             formatter_class=RawDescriptionHelpFormatter)
         parser.add_argument("-v", "--version", action="store_true",
                             help="Display carp version information"
@@ -75,7 +75,7 @@ class CarpGui:
         args = parser.parse_args()
 
         if args.version:
-            print("{} - v{}".format(carp_desc, __version__))
+            print("{} - v{}".format(_(__description__), __version__))
             sys.exit(0)
 
         self.config_file = os.path.join(xdg_config_home, "carp", "carp.conf")
@@ -258,12 +258,12 @@ class CarpGui:
         if absolute_path:
             target_folder = stash_name_or_path
         else:
-            target_folder = os.path.join(self.sm.mount_point(),
+            target_folder = os.path.join(self.sm.mount_point,
                                          stash_name_or_path)
         subprocess.Popen(["gio", "open", target_folder])
 
     def open_in_term(self, widget, stash_name):
-        target_folder = os.path.join(self.sm.mount_point(), stash_name)
+        target_folder = os.path.join(self.sm.mount_point, stash_name)
         os.chdir(target_folder)
         subprocess.Popen(["st"])
 
@@ -295,7 +295,7 @@ Type=Application
 X-MATE-Autostart-enabled=true
 X-GNOME-Autostart-Delay=20
 StartupNotify=false
-""".format(_("Carp"), _("EncFS manager"), _("EncFS GUI managing tool")))
+""".format("Carp", _(__generic_name__), _(__description__)))
 
         elif file_yet_exists and not self.must_autostart:
             os.remove(os.path.join(
@@ -310,9 +310,9 @@ StartupNotify=false
         about_dialog = Gtk.AboutDialog()
         about_dialog.set_destroy_with_parent(True)
         about_dialog.set_icon_name("carp")
-        about_dialog.set_name(_("Carp"))
+        about_dialog.set_name("Carp")
         about_dialog.set_website("https://projects.deparis.io/projects/carp/")
-        about_dialog.set_comments(_("EncFS GUI managing tool"))
+        about_dialog.set_comments(_(__description__))
         about_dialog.set_version(__version__)
         about_dialog.set_copyright(_("Carp is released under the WTFPL"))
         about_dialog.set_authors(["Étienne Deparis <etienne@depar.is>"])

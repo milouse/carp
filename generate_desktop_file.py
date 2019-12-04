@@ -1,5 +1,6 @@
 import os
 import gettext
+from carp import __description__, __generic_name__
 
 
 def write_key(key, value):
@@ -23,12 +24,13 @@ def generate_desktop_file():
         languages=["en_US"])
     loc_lang.install()
     _ = loc_lang.gettext
-    df_content.append("Name={}".format(_("Carp")))
-    df_content.append("GenericName={}".format(_("EncFS manager")))
-    df_content.append("Comment={}".format(_("EncFS GUI managing tool")))
+    # Copy english description string
+    df_content.append("Name={}".format("Carp"))
+    df_content.append("GenericName={}".format(_(__generic_name__)))
+    df_content.append("Comment={}".format(_(__description__)))
     df_content += write_key("Name", "Carp")
-    df_content += write_key("GenericName", "EncFS manager")
-    df_content += write_key("Comment", "EncFS GUI managing tool")
+    df_content += write_key("GenericName", __generic_name__)
+    df_content += write_key("Comment", __description__)
     with open("./carp.desktop", "w") as lnfile:
         lnfile.write("\n".join(df_content))
         lnfile.write("""

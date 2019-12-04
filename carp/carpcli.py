@@ -3,7 +3,7 @@ import sys
 from carp.stash_manager import StashManager, CarpNotAStashError, \
     CarpMountError, CarpNoRemoteError, CarpNotEmptyDirectoryError, \
     CarpSubcommandError, CarpMustBePushedError
-from carp import __version__
+from carp import __version__, __description__
 from xdg.BaseDirectory import xdg_config_home
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 
@@ -33,7 +33,7 @@ class CarpCli:
             self.die(str(e))
 
         if self.command in ["mount", "umount", "pull", "push"] and \
-           "stash" in self.options and self.options["stash"] == "all":
+           self.options.get("stash") == "all":
             work_on_stash = []
             if self.command == "umount":
                 work_on_stash = carp.mounted_stashes()
@@ -54,7 +54,7 @@ class CarpCli:
         sys.exit(error_code)
 
     def parse_args(self):
-        carp_desc = _("EncFS CLI managing tool")
+        carp_desc = _(__description__)
         parser = ArgumentParser(
             description=carp_desc,
             formatter_class=RawDescriptionHelpFormatter,
@@ -126,37 +126,34 @@ For exemple: %(prog)s create --help
             print("{} - v{}".format(carp_desc, __version__))
             sys.exit(0)
 
-        self.command = args.command
-
-        if self.command not in subparsers.choices.keys():
+        if args.command not in subparsers.choices.keys():
             self.die(parser.format_help())
 
+        self.command = args.command
+        self.options = self.parse_options(args)
+
+    def parse_options(self, args):
         if self.command == "list":
-            self.options = self.list_opts(args)
+            return {
+                "config": args.config,
+                "state": args.state,
+                "raw": args.raw
+            }
         elif self.command == "create":
-            self.options = self.create_opts(args)
-        else:
-            self.options = self.default_stash_opts(args)
-        self.options["config"] = args.config
-
-    def list_opts(self, opts):
-        return {
-            "state": opts.state,
-            "raw": opts.raw
+            return {
+                "config": args.config,
+                "rootdir": args.rootdir,
+                "mount": args.mount,
+                "save_pass": args.save_pass
+            }
+        opts = {
+            "config": args.config,
+            "stash": args.stash,
+            "test": args.test
         }
-
-    def create_opts(self, opts):
-        return {
-            "rootdir": opts.rootdir,
-            "mount": opts.mount,
-            "save_pass": opts.save_pass
-        }
-
-    def default_stash_opts(self, opts):
-        return {
-            "stash": opts.stash,
-            "test": opts.test
-        }
+        if self.command in ["mount", "umount"]:
+            opts["nosync"] = args.nosync
+        return opts
 
     def run(self, carp, can_exit=True):
         try:

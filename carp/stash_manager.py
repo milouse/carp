@@ -63,10 +63,19 @@ class StashManager:
         if "general" not in self.config:
             self.config["general"] = {}
 
-        self._mount_point = None
-        self.config["general"]["mount_point"] = self.mount_point()
-        self._encfs_root = None
-        self.config["general"]["encfs_root"] = self.encfs_root()
+        self.mount_point = self.check_and_clean_dir_path(
+            self.config["general"].get(
+                "mount_point", os.path.join("~", "Private")
+            )
+        )
+        self.config["general"]["mount_point"] = self.mount_point
+
+        self.encfs_root = self.check_and_clean_dir_path(
+            self.config["general"].get(
+                "encfs_root", os.path.join("~", ".encfs_root")
+            )
+        )
+        self.config["general"]["encfs_root"] = self.encfs_root
 
         self.write_config()
         self.reload_stashes()
@@ -74,42 +83,35 @@ class StashManager:
     def reload_stashes(self):
         self.stashes = {}
         for sec in self.config.sections():
-            loc_emp = self.init_stash(sec)
-            if loc_emp:
-                self.stashes[sec] = loc_emp
+            if sec == "general":
+                continue
+            self.stashes[sec] = self.init_stash(sec)
 
     def init_stash(self, stash_name):
-        if stash_name == "general":
-            return None
-
-        config_dir = self.config[stash_name].get(
-            "config_path",
-            os.path.join(xdg_config_home, "carp", stash_name)
-        )
-        config_dir = self.check_dir(os.path.expanduser(config_dir))
+        config_dir = self.stash_config_path(stash_name)
 
         config_file = os.path.join(config_dir, "encfs6.xml")
         if not os.path.exists(config_file):
             raise FileNotFoundError(
                 _("{0} does not exists.").format(config_file))
+        if oct(os.stat(config_file).st_mode & 0o777) != 0o600:
+            os.chmod(config_file, 0o600)
 
         pass_file = os.path.join(config_dir, "encfs.pass.gpg")
         if not os.path.exists(pass_file):
             pass_file = None
-        else:
+        elif oct(os.stat(pass_file).st_mode & 0o777) != 0o600:
             os.chmod(pass_file, 0o600)
 
-        os.chmod(config_file, 0o600)
-
         stash_remote_path = None
-        if "remote_path" in self.config[stash_name] and \
-           "nosync" not in self.config[stash_name]:
-            stash_remote_path = self.config[stash_name]["remote_path"]
+        if not self.config[stash_name].get("nosync", False):
+            stash_remote_path = self.config[stash_name].get("remote_path")
 
-        stash_encfs_root = os.path.join(self.encfs_root(), stash_name)
-        if "encfs_root" in self.config[stash_name]:
-            stash_encfs_root = os.path.expanduser(
-                self.config[stash_name]["encfs_root"])
+        stash_encfs_root = self.config[stash_name].get("encfs_root")
+        if stash_encfs_root is None:
+            stash_encfs_root = os.path.join(self.encfs_root, stash_name)
+        else:
+            stash_encfs_root = os.path.expanduser(stash_encfs_root)
 
         if not os.path.exists(stash_encfs_root):
             raise FileNotFoundError(
@@ -121,67 +123,46 @@ class StashManager:
                 "remote_path": stash_remote_path,
                 "encfs_root": stash_encfs_root}
 
-    def check_dir(self, path):
-        if (os.path.exists(path) and
-           not os.path.isdir(path)):
-            raise NotADirectoryError(
-                _("{0} already exists in your file system but is "
-                  "NOT an empty folder.").format(path))
-        elif not os.path.exists(path):
+    def stash_config_path(self, stash_name):
+        return self.check_and_clean_dir_path(
+            self.config.get(stash_name, {}).get(
+                "config_path",
+                os.path.join(xdg_config_home, "carp", stash_name)
+            )
+        )
+
+    def check_and_clean_dir_path(self, path, check_if_empty=False):
+        path = os.path.expanduser(path)
+        if not os.path.exists(path):
+            # path does not exists yet.
             print(_("WARNING: {0} does not exists, "
                     "thus we create an empty one")
                   .format(path), file=sys.stderr)
             os.makedirs(path)
-
-        return path
-
-    def check_dir_is_empty(self, path):
-        if any(os.listdir(path)):
+        elif not os.path.isdir(path):
+            raise NotADirectoryError(
+                _("{0} already exists in your file system but is "
+                  "NOT an empty folder.").format(path))
+        if check_if_empty and any(os.listdir(path)):
             raise CarpNotEmptyDirectoryError(
                 _("{0} is not an empty dirctory. It cannot be used as a "
                   "new EncFS stash.").format(path))
-
-    def mount_point(self):
-        if self._mount_point:
-            return self._mount_point
-
-        self._mount_point = os.path.join(os.path.expanduser("~"), "Private")
-
-        if ("general" in self.config and
-           "mount_point" in self.config["general"]):
-            self._mount_point = self.config["general"]["mount_point"]
-
-        return self.check_dir(self._mount_point)
-
-    def encfs_root(self):
-        if self._encfs_root:
-            return self._encfs_root
-
-        self._encfs_root = os.path.join(os.path.expanduser("~"), ".encfs_root")
-
-        if ("general" in self.config and
-           "encfs_root" in self.config["general"]):
-            self._encfs_root = self.config["general"]["encfs_root"]
-
-        return self.check_dir(self._encfs_root)
+        return path
 
     def write_config(self):
         with open(self.config_file, "w") as f:
             self.config.write(f)
 
     def log_activity(self, stash_name, activity):
-        config_dir = os.path.join(xdg_config_home, "carp", stash_name)
+        config_dir = self.stashes[stash_name]["config_path"]
         log_file = os.path.join(config_dir, "activity.log")
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         with open(log_file, "a") as f:
             f.write("[{0}] {1}\n".format(now, activity))
 
         rotate_file = False
-        with open(log_file, "r") as f:
-            all_lines_count = sum(1 for _ in f)
-            if all_lines_count > 500:
-                rotate_file = True
-
+        if sum(1 for _line in open(log_file, "r")) > 500:
+            rotate_file = True
         if rotate_file:
             shutil.copyfile(log_file, log_file + ".1")
             os.truncate(log_file, 0)
@@ -194,11 +175,10 @@ class StashManager:
     def mounted_stashes(self):
         all_stashes = self.stashes.keys()
         _mounted_stashes = []
-
         with open("/proc/mounts", "r") as proc:
             for line in proc:
                 regex = r"^encfs {}/(.+) fuse.encfs.+$" \
-                        .format(self.mount_point())
+                        .format(self.mount_point)
                 cdata = re.match(regex, line)
                 if cdata is None:
                     continue
@@ -206,7 +186,6 @@ class StashManager:
                 if lst not in all_stashes:
                     continue
                 _mounted_stashes.append(lst)
-
         return _mounted_stashes
 
     def unmounted_stashes(self):
@@ -219,7 +198,7 @@ class StashManager:
                              check=True, stdout=subprocess.PIPE)
         return re.sub(encfs_mp, "", cmd.stdout.decode()).strip()
 
-    def __format_stash(self, stash_name, state="mounted", no_state=False):
+    def _format_stash(self, stash_name, state="mounted", no_state=False):
         pdata = [stash_name]
         lin_home = os.path.expanduser("~")
 
@@ -233,7 +212,7 @@ class StashManager:
             pdata.append("ERR")
 
         if not no_state:
-            stash_mount_point = os.path.join(self.mount_point(), stash_name)
+            stash_mount_point = os.path.join(self.mount_point, stash_name)
             if state != "mounted":
                 pdata.append("-")
             elif os.path.exists(stash_mount_point):
@@ -241,7 +220,7 @@ class StashManager:
             else:
                 pdata.append("ERR")
 
-        if self.stashes[stash_name]["remote_path"]:
+        if self.stashes[stash_name]["remote_path"] is not None:
             pdata.append(self.stashes[stash_name]["remote_path"])
         else:
             pdata.append("-")
@@ -250,19 +229,16 @@ class StashManager:
 
         return tuple(pdata)
 
-    def __list_raw(self, state, mounted_list, unmounted_list):
+    def _list_raw(self, state, mounted_list, unmounted_list):
         if state == "mounted":
             print("\n".join(mounted_list))
-
         elif state == "unmounted":
             print("\n".join(unmounted_list))
-
         else:
             print("\n".join(mounted_list + unmounted_list))
-
         return True
 
-    def __list_fancy(self, state, mounted_list, unmounted_list):
+    def _list_fancy(self, state, mounted_list, unmounted_list):
         name_len = len(_("NAME"))
         mounted_len = len(_("PATH"))
         remote_len = len(_("REMOTE"))
@@ -275,17 +251,15 @@ class StashManager:
                 state_len = len(i18n_state)
 
         for st in self.stashes.keys():
-            if (state == "mounted" and
-               st not in mounted_list):
+            if state == "mounted" and st not in mounted_list:
                 continue
-            if (state == "unmounted" and
-               st not in unmounted_list):
+            if state == "unmounted" and st not in unmounted_list:
                 continue
 
             if len(st) > name_len:
                 name_len = len(st)
 
-            stash_mount_point = os.path.join(self.mount_point(), st)
+            stash_mount_point = os.path.join(self.mount_point, st)
             if os.path.exists(stash_mount_point) and st in mounted_list:
                 stash_mount_point = re.sub(lin_home, "~", stash_mount_point)
                 if len(stash_mount_point) > mounted_len:
@@ -299,85 +273,74 @@ class StashManager:
 
             stash_remote_path = self.stashes[st]["remote_path"]
             if stash_remote_path and len(stash_remote_path) > remote_len:
-                    remote_len = len(stash_remote_path)
-
-        partial_line = "{:<{nfill}} {:<{rfill}} {:<{refill}} {:<7}"
-        complete_line = "{:<{nfill}} {:<{sfill}} {:<{rfill}} " \
-                        "{:<{mfill}} {:<{refill}} {:<7}"
+                remote_len = len(stash_remote_path)
 
         if state == "unmounted":
+            partial_line = "{:<{nfill}} {:<{rfill}} {:<{refill}} {:<7}"
             print(partial_line.format(_("NAME"), _("ROOT"), _("REMOTE"),
                                       _("SIZE"), nfill=name_len,
                                       rfill=root_len, refill=remote_len))
-
-        else:
-            print(complete_line.format(_("NAME"), _("STATE"), _("ROOT"),
-                                       _("PATH"), _("REMOTE"), _("SIZE"),
-                                       nfill=name_len,
-                                       sfill=state_len,
-                                       rfill=root_len,
-                                       mfill=mounted_len,
-                                       refill=remote_len))
-
-        if state == "mounted" or state == "all":
-            for st in mounted_list:
-                print(complete_line.format(*self.__format_stash(st),
-                                           nfill=name_len,
-                                           sfill=state_len,
-                                           rfill=root_len,
-                                           mfill=mounted_len,
-                                           refill=remote_len))
-        elif state == "unmounted":
             for st in unmounted_list:
-                print(partial_line.format(*self.__format_stash(st, "-", True),
+                print(partial_line.format(*self._format_stash(st, "-", True),
                                           nfill=name_len,
                                           rfill=root_len,
                                           refill=remote_len))
+            return True
 
+        complete_line = "{:<{nfill}} {:<{sfill}} {:<{rfill}} " \
+                        "{:<{mfill}} {:<{refill}} {:<7}"
+
+        print(complete_line.format(_("NAME"), _("STATE"), _("ROOT"),
+                                   _("PATH"), _("REMOTE"), _("SIZE"),
+                                   nfill=name_len, sfill=state_len,
+                                   rfill=root_len, mfill=mounted_len,
+                                   refill=remote_len))
+        for st in mounted_list:
+            print(complete_line.format(*self._format_stash(st),
+                                       nfill=name_len, sfill=state_len,
+                                       rfill=root_len, mfill=mounted_len,
+                                       refill=remote_len))
         if state == "all":
             for st in unmounted_list:
-                print(complete_line.format(*self.__format_stash(st, "-"),
-                                           nfill=name_len,
-                                           sfill=state_len,
-                                           rfill=root_len,
-                                           mfill=mounted_len,
+                print(complete_line.format(*self._format_stash(st, "-"),
+                                           nfill=name_len, sfill=state_len,
+                                           rfill=root_len, mfill=mounted_len,
                                            refill=remote_len))
         return True
 
     def list(self, opts):
-        state = "mounted"
-        if ("state" in opts and
-           opts["state"] in ["mounted", "unmounted", "all"]):
-            state = opts["state"]
+        state = opts.get("state")
+        if state not in ["mounted", "unmounted", "all"]:
+            state = "mounted"
 
         loc_mounted = self.mounted_stashes()
         loc_unmounted = self.unmounted_stashes()
+        has_mounted = any(loc_mounted)
+        has_unmounted = any(loc_unmounted)
 
-        if state == "mounted" and not any(loc_mounted):
+        if state == "mounted" and not has_mounted:
             return True
 
-        elif state == "unmounted" and not any(loc_unmounted):
+        elif state == "unmounted" and not has_unmounted:
             return True
 
-        elif (state == "all" and
-              not any(loc_mounted) and
-              not any(loc_unmounted)):
+        elif state == "all" and not has_mounted and not has_unmounted:
             return True
 
-        if "raw" in opts and opts["raw"]:
-            return self.__list_raw(state, loc_mounted, loc_unmounted)
+        if opts.get("raw", False):
+            return self._list_raw(state, loc_mounted, loc_unmounted)
 
-        return self.__list_fancy(state, loc_mounted, loc_unmounted)
+        return self._list_fancy(state, loc_mounted, loc_unmounted)
 
     def create(self, opts):
-        stash_encfs_root = self.check_dir(
-            os.path.expanduser(opts["rootdir"]))
-        self.check_dir_is_empty(stash_encfs_root)
-
+        stash_encfs_root = self.check_and_clean_dir_path(
+            opts["rootdir"], True
+        )
         stash_name = os.path.basename(stash_encfs_root)
-        stash_mount_point = self.check_dir(
-            os.path.join(self.mount_point(), stash_name))
-        self.check_dir_is_empty(stash_mount_point)
+        stash_mount_point = self.check_and_clean_dir_path(
+            os.path.join(self.mount_point, stash_name),
+            True
+        )
 
         cmd = subprocess.run(["encfs", stash_encfs_root,
                               stash_mount_point])
@@ -391,16 +354,15 @@ class StashManager:
                 "Time to save new configuration."))
 
         old_config = os.path.join(stash_encfs_root, ".encfs6.xml")
-        config_dir = self.check_dir(
-            os.path.join(xdg_config_home, "carp", stash_name))
+        config_dir = self.stash_config_path(stash_name)
         new_config = os.path.join(config_dir, "encfs6.xml")
         shutil.move(old_config, new_config)
         os.chmod(new_config, 0o600)
 
-        self.config[stash_name] = {}
+        self.config.setdefault(stash_name, {})
         self.write_config()
 
-        if "save_pass" in opts and opts["save_pass"]:
+        if opts.get("save_pass", False):
             new_pass = os.path.join(config_dir, "encfs.pass.gpg")
             print(_("Please enter your password a last time in order "
                     "to save it in your home folder. Leave it blank "
@@ -420,7 +382,7 @@ class StashManager:
                     raise CarpSubcommandError(
                         _("Something went wrong while saving your password."))
 
-        if "mount" in opts and opts["mount"]:
+        if opts.get("mount", False):
             opts["stash"] = stash_name
             self.stashes[stash_name] = self.init_stash(stash_name)
             return self.mount(opts)
@@ -428,16 +390,12 @@ class StashManager:
         return True
 
     def may_sync(self, stash_name):
-        if stash_name not in self.stashes:
+        if self.stashes[stash_name]["remote_path"] is None:
             return False
-        if not self.stashes[stash_name]["remote_path"]:
-            return False
-        if "nosync" in self.stashes[stash_name]:
-            return False
-        return True
+        return not self.stashes[stash_name].get("nosync", False)
 
     def handle_inotify_event(self, event, stash_name):
-        (_, type_names, watch_path, filename) = event
+        (_data, type_names, watch_path, filename) = event
 
         main_activity = None
         if "IN_UNMOUNT" in type_names:
@@ -498,33 +456,55 @@ class StashManager:
 
         self.log_activity(stash_name, "Killing inotify daemon")
 
+    def daemonize(self):
+        """
+        do the UNIX double-fork magic, see Stevens' "Advanced
+        Programming in the UNIX Environment" for details (ISBN 0201563177)
+        http://www.erlenstar.demon.co.uk/unix/faq_2.html#SEC16
+        https://web.archive.org/web/20131017130434/http://www.jejik.com/articles/2007/02/a_simple_unix_linux_daemon_in_python/
+        """
+        newpid = os.fork()
+        if newpid > 0:
+            return False
+        # decouple from parent environment
+        os.chdir("/")
+        os.setsid()
+        os.umask(0)
+        # Fork a second time
+        newpid = os.fork()
+        if newpid > 0:
+            return False
+        return True
+
     def mount(self, opts):
-        test_run = "test" in opts and opts["test"]
+        test_run = opts.get("test", False)
         stash_name = opts["stash"]
         self.valid_stash(stash_name)
         if stash_name in self.mounted_stashes():
             raise CarpMountError(_("{0} already mounted."
                                  .format(stash_name)))
-        if "nosync" in opts:
+        if opts.get("nosync", False):
             self.stashes[stash_name]["nosync"] = True
 
-        loc_stash = self.stashes[stash_name]
-        stash_mount_point = self.check_dir(
-            os.path.join(self.mount_point(), stash_name))
-        self.check_dir_is_empty(stash_mount_point)
+        stash_mount_point = self.check_and_clean_dir_path(
+            os.path.join(self.mount_point, stash_name),
+            True
+        )
         stash_encfs_root = self.stashes[stash_name]["encfs_root"]
 
-        os.environ["ENCFS6_CONFIG"] = loc_stash["config_file"]
+        os.environ["ENCFS6_CONFIG"] = self.stashes[stash_name]["config_file"]
         if test_run:
             print(_("{0} should be mounted without problem (DRY RUN)")
                   .format(stash_mount_point))
             return True
 
         mount_cmd = ["encfs", stash_encfs_root, stash_mount_point]
-        if loc_stash["pass_file"]:
+        if self.stashes[stash_name]["pass_file"]:
             mount_cmd.insert(1, "--extpass")
-            mount_cmd.insert(2, "gpg -q -d {}".format(loc_stash["pass_file"]))
-        elif "pass_cmd" in opts and opts["pass_cmd"] != "":
+            mount_cmd.insert(
+                2, "gpg -q -d {}".format(self.stashes[stash_name]["pass_file"])
+            )
+        elif opts.get("pass_cmd", "") != "":
             mount_cmd.insert(1, "--extpass")
             mount_cmd.insert(2, opts["pass_cmd"])
 
@@ -540,26 +520,24 @@ class StashManager:
             # If we don't have to sync, quit early
             return True
 
-        newpid = os.fork()
-        if newpid == 0:
+        if self.daemonize():
             # Child process, begin loop
             self.inotify_loop(stash_name, stash_mount_point)
 
         return True
 
     def umount(self, opts):
-        test_run = "test" in opts and opts["test"]
         stash_name = opts["stash"]
         self.valid_stash(stash_name)
         if stash_name in self.unmounted_stashes():
             raise CarpMountError(_("{0} not mounted.")
                                  .format(stash_name))
-        if "nosync" in opts:
+        if opts.get("nosync", False):
             self.stashes[stash_name]["nosync"] = True
 
-        stash_mount_point = os.path.join(self.mount_point(), stash_name)
+        stash_mount_point = os.path.join(self.mount_point, stash_name)
 
-        if test_run:
+        if opts.get("test", False):
             print(_("{0} should be unmounted without problem (DRY RUN)")
                   .format(stash_mount_point))
             return True

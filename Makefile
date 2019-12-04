@@ -16,7 +16,7 @@ L10N_LANGS   = fr
 PO_FILES     = $(L10N_LANGS:%=locales/%/LC_MESSAGES/carp.po)
 MO_FILES     = $(PO_FILES:%.po=%.mo)
 DEST_MO      = $(L10N_LANGS:%=$(datarootdir)/locales/%/LC_MESSAGES/carp.mo)
-TRANSLATABLE = carp/carpcli.py carp/carpgui.py carp/stash_manager.py
+TRANSLATABLE = carp/__init__.py carp/carpcli.py carp/carpgui.py carp/stash_manager.py
 
 .PHONY: clean dist install uninstall lang uplang
 
