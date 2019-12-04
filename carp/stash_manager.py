@@ -82,10 +82,10 @@ class StashManager:
         if stash_name == "general":
             return None
 
-        config_dir = os.path.join(xdg_config_home, ".carp", stash_name)
-        if "config_path" in self.config[stash_name]:
-            config_dir = self.config[stash_name]["config_path"]
-
+        config_dir = self.config[stash_name].get(
+            "config_path",
+            os.path.join(xdg_config_home, "carp", stash_name)
+        )
         config_dir = self.check_dir(os.path.expanduser(config_dir))
 
         config_file = os.path.join(config_dir, "encfs6.xml")
@@ -170,7 +170,7 @@ class StashManager:
             self.config.write(f)
 
     def log_activity(self, stash_name, activity):
-        config_dir = os.path.join(xdg_config_home, ".carp", stash_name)
+        config_dir = os.path.join(xdg_config_home, "carp", stash_name)
         log_file = os.path.join(config_dir, "activity.log")
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         with open(log_file, "a") as f:
@@ -392,7 +392,7 @@ class StashManager:
 
         old_config = os.path.join(stash_encfs_root, ".encfs6.xml")
         config_dir = self.check_dir(
-            os.path.join(xdg_config_home, ".carp", stash_name))
+            os.path.join(xdg_config_home, "carp", stash_name))
         new_config = os.path.join(config_dir, "encfs6.xml")
         shutil.move(old_config, new_config)
         os.chmod(new_config, 0o600)

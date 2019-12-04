@@ -37,7 +37,7 @@ remote_path = user@mydomain.net:~/Stash1
 
 * FILES
 
-~/.config/.carp/carp.conf - Default config file path.
+~/.config/carp/carp.conf - Default config file path.
 
 #+begin_man
 .SH SEE ALSO

@@ -78,7 +78,7 @@ class CarpGui:
             print("{} - v{}".format(carp_desc, __version__))
             sys.exit(0)
 
-        self.config_file = os.path.join(xdg_config_home, ".carp", "carp.conf")
+        self.config_file = os.path.join(xdg_config_home, "carp", "carp.conf")
         if args.config:
             self.config_file = os.path.expanduser(args.config)
 
@@ -134,8 +134,8 @@ class CarpGui:
             mount_label = _("Mount {0}").format(stash_name)
             mount_action = "mount"
         else:
-            config_dir = os.path.join(xdg_config_home, ".carp", stash_name)
-            log_file = os.path.join(config_dir, "activity.log")
+            log_file = os.path.join(xdg_config_home, "carp",
+                                    stash_name, "activity.log")
 
             lfmb = Gtk.MenuItem.new_with_label(_("Last changes"))
             lfmb.set_sensitive(False)
