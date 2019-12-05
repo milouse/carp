@@ -12,7 +12,7 @@ VERSION = $(shell python setup.py --version)
 PY_VERSION = $(shell python -c "import sys;v=sys.version_info;print('{}.{}'.format(v.major, v.minor))")
 PY_SITE    = $(libdir)/python$(PY_VERSION)/site-packages
 
-L10N_LANGS   = fr
+L10N_LANGS   = fr en_US
 PO_FILES     = $(L10N_LANGS:%=locales/%/LC_MESSAGES/carp.po)
 MO_FILES     = $(PO_FILES:%.po=%.mo)
 DEST_MO      = $(L10N_LANGS:%=$(datarootdir)/locales/%/LC_MESSAGES/carp.mo)

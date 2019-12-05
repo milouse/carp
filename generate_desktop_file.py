@@ -6,7 +6,11 @@ from carp import __description__, __generic_name__
 def write_key(key, value):
     lines = []
     for l18ndir in os.listdir("./locales"):
-        if l18ndir == "carp.pot":
+        if l18ndir in ["carp.pot", "en_US"]:
+            continue
+        domain_file = os.path.join("./locales", l18ndir,
+                                   "LC_MESSAGES", "carp.mo")
+        if not os.path.exists(domain_file):
             continue
         loc_lang = gettext.translation(
             "carp", localedir="./locales",
@@ -31,7 +35,7 @@ def generate_desktop_file():
     df_content += write_key("Name", "Carp")
     df_content += write_key("GenericName", __generic_name__)
     df_content += write_key("Comment", __description__)
-    with open("./carp.desktop", "w") as lnfile:
+    with open("carp.desktop", "w") as lnfile:
         lnfile.write("\n".join(df_content))
         lnfile.write("""
 Exec=carp-icon
