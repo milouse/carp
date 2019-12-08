@@ -5,10 +5,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Carp 0.7.3\n"
+"Project-Id-Version: Carp 0.8.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-12-05 00:18+0100\n"
-"PO-Revision-Date: 2019-01-28 11:23+0100\n"
+"POT-Creation-Date: 2019-12-08 19:47+0100\n"
+"PO-Revision-Date: 2019-12-08 19:47+0100\n"
 "Last-Translator: Étienne Deparis <etienne@depar.is>\n"
 "Language-Team: French (https://www.transifex.com/carp/teams/78408/fr/)\n"
 "Language: fr\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"X-Generator: Poedit 2.2\n"
+"X-Generator: Poedit 2.2.4\n"
 
 #: carp/__init__.py:7
 msgid "EncFS GUI managing tool"
