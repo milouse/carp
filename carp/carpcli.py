@@ -60,7 +60,7 @@ class CarpCli:
             formatter_class=RawDescriptionHelpFormatter,
             epilog=_("""\
 Each command has its own help. To access it, do a:
-  %(prog)s command --help
+  %(prog)s COMMAND --help
 
 For exemple: %(prog)s create --help
 """))
@@ -82,9 +82,8 @@ For exemple: %(prog)s create --help
                                  help=_("Ignore sync feature."))
 
         subparsers = parser.add_subparsers(
-            dest="command", title=_("Commands"), help=None,
-            metavar=_("what to do with your EncFS stashes:"),
-            description=None)
+            dest="command", help=None,
+            metavar="COMMAND", description=None)
         parser_list = subparsers.add_parser(
             "list", help=_("List your EncFS stashes."))
         parser_create = subparsers.add_parser(
