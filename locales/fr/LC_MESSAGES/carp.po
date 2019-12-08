@@ -5,10 +5,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Carp 0.8.0\n"
+"Project-Id-Version: Carp 0.8.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-12-08 19:47+0100\n"
-"PO-Revision-Date: 2019-12-08 19:47+0100\n"
+"POT-Creation-Date: 2019-12-08 20:35+0100\n"
+"PO-Revision-Date: 2019-12-08 20:36+0100\n"
 "Last-Translator: Étienne Deparis <etienne@depar.is>\n"
 "Language-Team: French (https://www.transifex.com/carp/teams/78408/fr/)\n"
 "Language: fr\n"
@@ -39,13 +39,13 @@ msgstr "Travail sur {0}"
 #, python-format
 msgid ""
 "Each command has its own help. To access it, do a:\n"
-"  %(prog)s command --help\n"
+"  %(prog)s COMMAND --help\n"
 "\n"
 "For exemple: %(prog)s create --help\n"
 msgstr ""
 "Chaque commande possède sa propre aide intégrée. Pour la parcourir, "
 "entrez :\n"
-"  %(prog)s command --help\n"
+"  %(prog)s COMMAND --help\n"
 "\n"
 "Par exemple : %(prog)s create --help\n"
 
@@ -69,56 +69,48 @@ msgstr "Essai à blanc."
 msgid "Ignore sync feature."
 msgstr "Ignore la fonctionnalité de synchronisation."
 
-#: carp/carpcli.py:85
-msgid "Commands"
-msgstr "Commandes"
-
-#: carp/carpcli.py:86
-msgid "what to do with your EncFS stashes:"
-msgstr "quoi faire avec vos coffres-forts EncFS :"
-
-#: carp/carpcli.py:89
+#: carp/carpcli.py:88
 msgid "List your EncFS stashes."
 msgstr "Liste vos coffres-forts EncFS."
 
-#: carp/carpcli.py:91
+#: carp/carpcli.py:90
 msgid "Create a new EncFS stash."
 msgstr "Crée un nouveau coffre-fort EncFS."
 
-#: carp/carpcli.py:93
+#: carp/carpcli.py:92
 msgid "Mount an existing EncFS stash."
 msgstr "Monte un coffre-fort EncFS existant."
 
-#: carp/carpcli.py:96
+#: carp/carpcli.py:95
 msgid "Unmount a currently mounted EncFS stash."
 msgstr "Démonte un coffre-fort EncFS actuellement monté."
 
-#: carp/carpcli.py:99
+#: carp/carpcli.py:98
 msgid "Pull a distant stash."
 msgstr "Récupère un coffre-fort distant."
 
-#: carp/carpcli.py:102
+#: carp/carpcli.py:101
 msgid "Push a distant stash."
 msgstr "Pousse un coffre-fort distant."
 
-#: carp/carpcli.py:107
+#: carp/carpcli.py:106
 msgid "Save the password in a file."
 msgstr "Enregistre le mot de passe dans un fichier."
 
-#: carp/carpcli.py:110
+#: carp/carpcli.py:109
 msgid "Mount the stash after creation."
 msgstr "Monte le coffre-fort après sa création."
 
-#: carp/carpcli.py:112
+#: carp/carpcli.py:111
 msgid "The path to an empty folder, which will become the encrypted stash."
 msgstr ""
 "Le chemin vers un dossier vide qui servira à stocker les données chiffrées."
 
-#: carp/carpcli.py:118
+#: carp/carpcli.py:117
 msgid "What do you want to list? (default: mounted)"
 msgstr "Que voulez-vous lister ? (par défaut : mounted)"
 
-#: carp/carpcli.py:120
+#: carp/carpcli.py:119
 msgid "Don't display stash current state (only useful for 'all' subcommand)."
 msgstr ""
 "Ne pas afficher l'état courant des coffres-forts (utile seulement pour la "
@@ -204,25 +196,25 @@ msgstr ""
 "Une erreur est survenue lors de la récupération de votre liste de coffres-"
 "forts"
 
-#: carp/carpgui.py:208
+#: carp/carpgui.py:209
 msgid "Automatically start"
 msgstr "Lancer au démarrage de la session"
 
-#: carp/carpgui.py:214
+#: carp/carpgui.py:215
 msgid "Report a bug"
 msgstr "Rapporter un bogue"
 
-#: carp/carpgui.py:248
+#: carp/carpgui.py:249
 #, python-brace-format
 msgid "{0} correctly {1}ed"
 msgstr "{0} a été correctement {1}é"
 
-#: carp/carpgui.py:252
+#: carp/carpgui.py:253
 #, python-brace-format
 msgid "An error occured while {1}ing {0}"
 msgstr "Une erreur est survenue alors que le système {1}ait {0}"
 
-#: carp/carpgui.py:317
+#: carp/carpgui.py:318
 msgid "Carp is released under the WTFPL"
 msgstr "Carp est publié selon les termes de la WTFPL"
 
@@ -354,6 +346,12 @@ msgstr "{0} ne peut pas être récupéré tant qu'il est monté."
 #, python-brace-format
 msgid "No remote configured for {0}"
 msgstr "Pas de configuration distante trouvée pour {0}"
+
+#~ msgid "Commands"
+#~ msgstr "Commandes"
+
+#~ msgid "what to do with your EncFS stashes:"
+#~ msgstr "quoi faire avec vos coffres-forts EncFS :"
 
 #~ msgid "EncFS CLI managing tool"
 #~ msgstr "Outil en ligne de commande pour EncFS"

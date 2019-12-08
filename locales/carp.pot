@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Carp 0.8.0\n"
+"Project-Id-Version: Carp 0.8.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-12-08 19:47+0100\n"
+"POT-Creation-Date: 2019-12-08 20:35+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -38,7 +38,7 @@ msgstr ""
 #, python-format
 msgid ""
 "Each command has its own help. To access it, do a:\n"
-"  %(prog)s command --help\n"
+"  %(prog)s COMMAND --help\n"
 "\n"
 "For exemple: %(prog)s create --help\n"
 msgstr ""
@@ -63,55 +63,47 @@ msgstr ""
 msgid "Ignore sync feature."
 msgstr ""
 
-#: carp/carpcli.py:85
-msgid "Commands"
-msgstr ""
-
-#: carp/carpcli.py:86
-msgid "what to do with your EncFS stashes:"
-msgstr ""
-
-#: carp/carpcli.py:89
+#: carp/carpcli.py:88
 msgid "List your EncFS stashes."
 msgstr ""
 
-#: carp/carpcli.py:91
+#: carp/carpcli.py:90
 msgid "Create a new EncFS stash."
 msgstr ""
 
-#: carp/carpcli.py:93
+#: carp/carpcli.py:92
 msgid "Mount an existing EncFS stash."
 msgstr ""
 
-#: carp/carpcli.py:96
+#: carp/carpcli.py:95
 msgid "Unmount a currently mounted EncFS stash."
 msgstr ""
 
-#: carp/carpcli.py:99
+#: carp/carpcli.py:98
 msgid "Pull a distant stash."
 msgstr ""
 
-#: carp/carpcli.py:102
+#: carp/carpcli.py:101
 msgid "Push a distant stash."
 msgstr ""
 
-#: carp/carpcli.py:107
+#: carp/carpcli.py:106
 msgid "Save the password in a file."
 msgstr ""
 
-#: carp/carpcli.py:110
+#: carp/carpcli.py:109
 msgid "Mount the stash after creation."
 msgstr ""
 
-#: carp/carpcli.py:112
+#: carp/carpcli.py:111
 msgid "The path to an empty folder, which will become the encrypted stash."
 msgstr ""
 
-#: carp/carpcli.py:118
+#: carp/carpcli.py:117
 msgid "What do you want to list? (default: mounted)"
 msgstr ""
 
-#: carp/carpcli.py:120
+#: carp/carpcli.py:119
 msgid "Don't display stash current state (only useful for 'all' subcommand)."
 msgstr ""
 
@@ -193,25 +185,25 @@ msgstr ""
 msgid "An error occured while retrieving your stashes' list"
 msgstr ""
 
-#: carp/carpgui.py:208
+#: carp/carpgui.py:209
 msgid "Automatically start"
 msgstr ""
 
-#: carp/carpgui.py:214
+#: carp/carpgui.py:215
 msgid "Report a bug"
 msgstr ""
 
-#: carp/carpgui.py:248
+#: carp/carpgui.py:249
 #, python-brace-format
 msgid "{0} correctly {1}ed"
 msgstr ""
 
-#: carp/carpgui.py:252
+#: carp/carpgui.py:253
 #, python-brace-format
 msgid "An error occured while {1}ing {0}"
 msgstr ""
 
-#: carp/carpgui.py:317
+#: carp/carpgui.py:318
 msgid "Carp is released under the WTFPL"
 msgstr ""
 
