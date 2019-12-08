@@ -205,7 +205,8 @@ class CarpGui:
         menu.append(sep)
 
         # Launch at session start
-        mi_button = Gtk.CheckMenuItem(_("Automatically start"))
+        mi_button = Gtk.CheckMenuItem()
+        mi_button.set_label(_("Automatically start"))
         mi_button.set_active(self.must_autostart)
         menu.append(mi_button)
         mi_button.connect("toggled", self.toggle_must_autostart)
