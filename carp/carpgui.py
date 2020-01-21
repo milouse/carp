@@ -304,7 +304,7 @@ StartupNotify=false
 
     def report_a_bug(self, widget):
         subprocess.Popen(
-            ["gio", "open", "https://fossil.deparis.io/carp/ticket"]
+            ["gio", "open", "https://github.com/milouse/carp/issues"]
         )
 
     def show_about_dialog(self, widget):
@@ -312,7 +312,7 @@ StartupNotify=false
         about_dialog.set_destroy_with_parent(True)
         about_dialog.set_icon_name("carp")
         about_dialog.set_name("Carp")
-        about_dialog.set_website("https://fossil.deparis.io/carp/")
+        about_dialog.set_website("https://git.umaneti.net/carp/about/")
         about_dialog.set_comments(_(__description__))
         about_dialog.set_version(__version__)
         about_dialog.set_copyright(_("Carp is released under the WTFPL"))

@@ -4,9 +4,9 @@ carp is an EncFS frontend to ease day-to-day creating, mounting and
 umounting your various stashes. Using this script, your stash will
 always be mounted under *~/Private*.
 
-Main development occurs here: https://fossil.deparis.io/carp/
-That's here you must create tickets if you find some bugs. However, pull
-request could be pushed to github too.
+Main development occurs here: https://git.umaneti.net/carp/
+However, issues and pull request should be openend on
+[github](https://github.com/milouse/carp/) for now.
 
 ## Usage
 

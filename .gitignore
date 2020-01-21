@@ -3,3 +3,4 @@
 *.git
 *.pyc
 carp.desktop
+__pycache__
