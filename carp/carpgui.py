@@ -311,7 +311,7 @@ StartupNotify=false
         about_dialog = Gtk.AboutDialog()
         about_dialog.set_destroy_with_parent(True)
         about_dialog.set_icon_name("carp")
-        about_dialog.set_name("Carp")
+        about_dialog.set_program_name("Carp")
         about_dialog.set_website("https://git.umaneti.net/carp/about/")
         about_dialog.set_comments(_(__description__))
         about_dialog.set_version(__version__)
