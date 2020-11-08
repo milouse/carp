@@ -3,6 +3,6 @@ def _(string):
     return string
 
 
-__version__ = "0.8.1"
+__version__ = "0.8.2"
 __description__ = _("EncFS GUI managing tool")
 __generic_name__ = _("EncFS manager")
