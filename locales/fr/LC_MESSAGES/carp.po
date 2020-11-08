@@ -1,13 +1,13 @@
 # Carp Translation Effort
-# Copyright (C) 2019 Carp volunteers
+# Copyright (C) 2020 Carp volunteers
 # This file is distributed under the same license as the Carp package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Carp 0.8.1\n"
+"Project-Id-Version: Carp 0.8.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-12-08 20:35+0100\n"
+"POT-Creation-Date: 2020-11-08 15:01+0100\n"
 "PO-Revision-Date: 2019-12-08 20:36+0100\n"
 "Last-Translator: Étienne Deparis <etienne@depar.is>\n"
 "Language-Team: French (https://www.transifex.com/carp/teams/78408/fr/)\n"
